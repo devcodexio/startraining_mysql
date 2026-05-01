@@ -28,8 +28,8 @@ try {
 <!-- FontAwesome 6 CDN (Garantiza que los iconos fab funcionen) -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<footer class="footer-modern mt-5 mb-4 mx-auto animate" 
-    style="max-width: 1200px; position:relative; overflow:hidden; border-radius: 35px; border: 1px solid var(--border-light); background: var(--glass-bg); padding: 3rem 4rem; box-shadow: var(--glass-shadow); backdrop-filter: blur(30px);">
+<footer class="footer-modern mt-5 mb-4 animate" 
+    style="width: 100%; position:relative; overflow:hidden; border-radius: 35px; border: 1px solid var(--border-light); background: var(--glass-bg); padding: 3rem 4rem; box-shadow: var(--glass-shadow); backdrop-filter: blur(30px);">
     
     <div style="position:absolute; top:-100px; left:-100px; width:300px; height:300px; background:var(--primary); filter:blur(120px); opacity:0.1; border-radius:50%; z-index:0;"></div>
     <div style="position:absolute; bottom:-100px; right:10%; width:250px; height:250px; background:var(--secondary); filter:blur(110px); opacity:0.1; border-radius:50%; z-index:0;"></div>
