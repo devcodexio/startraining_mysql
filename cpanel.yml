@@ -1,6 +1,5 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home1/leninmal/public_html/
+    - export DEPLOYPATH=/home1/leninmal/public_html
     - /bin/cp -R * $DEPLOYPATH
- 
