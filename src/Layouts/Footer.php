@@ -36,7 +36,7 @@ try {
 
     <div class="row position-relative g-4 align-items-start" style="z-index: 2;">
         <!-- Segmento 1: Branding -->
-        <div class="col-md-4">
+        <div class="col-4 footer-col">
             <h3 class="logo-text d-flex align-items-center gap-3 mb-3" style="font-size: 1.85rem;">
                 <i class="fas fa-meteor text-primary shadow-icon"></i> <?= htmlspecialchars($siteName) ?>
             </h3>
@@ -56,7 +56,7 @@ try {
         </div>
 
         <!-- Segmento 2: Soporte -->
-        <div class="col-md-4 text-center">
+        <div class="col-4 footer-col text-center">
             <h5 class="fw-900 mb-4 text-primary ls-2">SOPORTE TÉCNICO</h5>
             <div class="d-flex flex-column gap-3 align-items-center">
                 <div class="contact-pill hover-scale">
@@ -72,9 +72,9 @@ try {
         </div>
 
         <!-- Segmento 3: Redes Sociales (Corregido y reforzado) -->
-        <div class="col-md-4 text-md-end">
+        <div class="col-4 footer-col text-md-end">
             <h5 class="fw-900 mb-4 text-primary ls-2">REDES SOCIALES</h5>
-            <div class="social-links-grid d-flex gap-3 justify-content-md-end justify-content-center">
+            <div class="social-links-grid d-flex gap-3">
                 <?php if($fb && $fb !== '#'): ?>
                     <a href="<?= htmlspecialchars($fb) ?>" target="_blank" class="social-btn-box fb" title="Facebook">
                         <i class="fab fa-facebook-f"></i>
@@ -143,4 +143,30 @@ try {
 
     .stat-mini h4 { line-height: 1; }
     .stat-mini p { font-size: 0.55rem; letter-spacing: 1px; opacity: 0.7; }
+
+    @media (min-width: 1025px) {
+        .text-md-end { text-align: right !important; }
+        .social-links-grid { justify-content: flex-end; }
+    }
+
+    @media (max-width: 1024px) {
+        .footer-modern {
+            padding: 2.5rem 2rem !important;
+            border-radius: 25px !important;
+            text-align: center;
+        }
+        .footer-col {
+            text-align: center !important;
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+        }
+        .social-links-grid {
+            justify-content: center !important;
+        }
+        .text-md-end {
+            text-align: center !important;
+        }
+        .logo-text { justify-content: center; }
+    }
 </style>
