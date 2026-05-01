@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { background: white; margin: 0; }
+        .nav-drawer {
+            visibility: visible;
+            opacity: 1;
+            position: fixed;
+            inset: 0;
+            z-index: 1500;
+            background: rgba(6, 7, 10, 0.85);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            padding: 2rem 2.5rem;
+            overflow-y: auto;
+        }
+        .nav-drawer .nav-item-mobile {
+            display: block;
+            width: 100%;
+            max-width: 340px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #fff;
+            text-decoration: none;
+            padding: 1.1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+            transition: color 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-drawer" id="navDrawer" role="dialog" aria-label="Menú de navegación">
+        <a href="/login" class="nav-item-mobile" style="position:relative; z-index: 2000; color: white !important; display: block !important; font-size: 1.5rem !important; text-align: center; font-weight: bold; padding: 1.5rem 0;">Login</a>
+        <a href="/register-company" class="nav-item-mobile" style="position:relative; z-index: 2000; color: white !important; display: block !important; font-size: 1.5rem !important; text-align: center; font-weight: bold; padding: 1.5rem 0;">Registrarse &rarr;</a>
+    </div>
+</body>
+</html>

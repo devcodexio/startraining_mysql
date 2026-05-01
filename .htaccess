@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Bloquear el acceso directo a archivos sensibles por seguridad
+    <FilesMatch "^\.env|bd\.sql$">
+        Require all denied
+    </FilesMatch>
+
+    # Redirigir todo el tráfico transparente hacia la carpeta public/
+    RewriteRule ^$ public/index.php [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
