@@ -1,0 +1,123 @@
+/* Spinner */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner {
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        /* AI Progress Bar */
+        .ai-progress-wrap {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(7, 10, 15, 0.96);
+            border: 1px solid var(--primary);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            min-width: 320px;
+            z-index: 999;
+            box-shadow: var(--shadow-neon);
+            display: none;
+        }
+
+        .ai-progress-bar-bg {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+        }
+
+        .ai-progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* Row glow on analysis */
+        .row-analyzing {
+            animation: rowPulse 1.2s infinite;
+        }
+
+        @keyframes rowPulse {
+
+            0%,
+            100% {
+                background: transparent;
+            }
+
+            50% {
+                background: rgba(var(--primary-rgb), 0.04);
+            }
+        }
+
+        /* Pending Pulse */
+        .match-pending {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .match-pending:hover {
+            transform: scale(1.05);
+            color: var(--primary) !important;
+        }
+
+        .pulse-ia {
+            animation: pulseIA 2s infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes pulseIA {
+            0% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+                text-shadow: 0 0 10px var(--primary);
+            }
+
+            100% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Fixed Centered Email Modal */
+        #emailModal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            z-index: 10000;
+            display: none;
+            /* Flex on open */
+            align-items: center;
+            /* Centrado vertical */
+            justify-content: center;
+            /* Centrado horizontal */
+            padding: 1.5rem;
+        }
+
+        #emailModal .glass-card {
+            width: 100%;
+            max-width: 550px;
+            animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }

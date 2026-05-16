@@ -6,14 +6,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        .filter-btn {
-            background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);
-            border-radius: 12px; padding: 0.6rem 1.2rem; cursor: pointer;
-            transition: all 0.3s ease; font-weight: 600; font-size: 0.85rem;
-        }
-        .filter-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
-    </style>
+    <link rel="stylesheet" href="/assets/css/admin_vacancies.css">
 </head>
 <body class="animate">
     <?php require_once __DIR__ . '/../../Layouts/Sidebar.php'; ?>
@@ -53,7 +46,16 @@
                                     <p class="mb-0 fw-700" style="font-size: 0.9rem;"><?= htmlspecialchars($v['titulo_puesto']) ?></p>
                                     <span class="xsmall text-muted">ID: #<?= $v['id'] ?> | <?= $v['modalidad'] ?></span>
                                 </td>
-                                <td><span class="badge badge-primary" style="font-size: 0.65rem;"><?= $v['carrera'] ?></span></td>
+                                 <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <?php 
+                                            $car_list = explode(', ', $v['carrera'] ?? '');
+                                            foreach($car_list as $c_name): if(empty($c_name)) continue;
+                                        ?>
+                                            <span class="badge badge-primary" style="font-size: 0.65rem;"><?= htmlspecialchars($c_name) ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <div style="width: 24px; height: 24px; border-radius: 6px; overflow: hidden;">

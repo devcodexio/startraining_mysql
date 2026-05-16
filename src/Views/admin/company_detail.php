@@ -35,13 +35,7 @@ $totalPostulaciones = $stmtP->fetchColumn();
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        .detail-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; }
-        .info-item { margin-bottom: 2rem; }
-        .info-label { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
-        .info-value { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
-        .v-list-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem; }
-    </style>
+    <link rel="stylesheet" href="/assets/css/admin_company_detail.css">
 </head>
 <body class="animate">
     <?php require_once __DIR__ . '/../../Layouts/Sidebar.php'; ?>
@@ -109,6 +103,60 @@ $totalPostulaciones = $stmtP->fetchColumn();
                         <span class="info-label">DIRECCIÓN FISCAL</span>
                         <span class="info-value" style="font-size: 0.9rem; opacity: 0.8;"><?= htmlspecialchars($c['direccion'] ?: 'Sin dirección') ?></span>
                     </div>
+
+                    <div class="mt-5 p-4 rounded-4" style="background: rgba(var(--primary-rgb), 0.05); border: 1px dashed rgba(var(--primary-rgb), 0.3);">
+                        <span class="info-label mb-3"><i class="fas fa-file-pdf text-danger me-2"></i> Documentación RUC</span>
+                        <?php if(!empty($c['ficha_ruc'])): ?>
+                            <a href="<?= $c['ficha_ruc'] ?>" target="_blank" class="btn-futuristic w-100 py-3 small">
+                                <i class="fas fa-external-link-alt me-2"></i> Ver Ficha RUC PDF
+                            </a>
+                        <?php else: ?>
+                            <p class="xsmall text-muted mb-0">No se adjuntó Ficha RUC durante el registro.</p>
+                        <?php endif; ?>
+
+                        <span class="info-label mb-3 mt-4"><i class="fas fa-id-card text-primary me-2"></i> Documentación DNI</span>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <?php if(!empty($c['dni_frente'])): 
+                                    $isPdfF = str_contains($c['dni_frente'], '.pdf');
+                                ?>
+                                    <a href="<?= $c['dni_frente'] ?>" target="_blank" class="d-block rounded-3 overflow-hidden border border-secondary border-opacity-20 text-center bg-white bg-opacity-5" style="height: 80px; display: flex !important; align-items: center; justify-content: center;">
+                                        <?php if($isPdfF): ?>
+                                            <i class="fas fa-file-pdf fs-2 text-danger"></i>
+                                        <?php else: ?>
+                                            <img src="<?= $c['dni_frente'] ?>" style="width:100%; height:100%; object-fit:cover;" title="DNI Frente">
+                                        <?php endif; ?>
+                                    </a>
+                                <?php else: ?>
+                                    <div class="p-2 text-center xsmall opacity-50 border rounded-3" style="height: 80px; display: flex; align-items: center; justify-content: center;">Sin Frente</div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="col-6">
+                                <?php if(!empty($c['dni_reverso'])): 
+                                    $isPdfR = str_contains($c['dni_reverso'], '.pdf');
+                                ?>
+                                    <a href="<?= $c['dni_reverso'] ?>" target="_blank" class="d-block rounded-3 overflow-hidden border border-secondary border-opacity-20 text-center bg-white bg-opacity-5" style="height: 80px; display: flex !important; align-items: center; justify-content: center;">
+                                        <?php if($isPdfR): ?>
+                                            <i class="fas fa-file-pdf fs-2 text-danger"></i>
+                                        <?php else: ?>
+                                            <img src="<?= $c['dni_reverso'] ?>" style="width:100%; height:100%; object-fit:cover;" title="DNI Reverso">
+                                        <?php endif; ?>
+                                    </a>
+                                <?php else: ?>
+                                    <div class="p-2 text-center xsmall opacity-50 border rounded-3" style="height: 80px; display: flex; align-items: center; justify-content: center;">Sin Reverso</div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <span class="info-label mb-3 mt-4"><i class="fas fa-camera text-primary me-2"></i> Verificación Biométrica (Selfie)</span>
+                        <?php if(!empty($c['foto_selfie'])): ?>
+                            <div class="rounded-4 overflow-hidden border border-primary border-opacity-20 shadow-sm" style="height: 200px; background: #000;">
+                                <img src="<?= $c['foto_selfie'] ?>" style="width:100%; height:100%; object-fit:cover;" title="Selfie de Verificación">
+                            </div>
+                        <?php else: ?>
+                            <div class="p-4 text-center xsmall opacity-50 border rounded-3 bg-white bg-opacity-5">No se capturó selfie</div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
 
@@ -132,14 +180,34 @@ $totalPostulaciones = $stmtP->fetchColumn();
                                         <h6 class="fw-800 mb-1"><?= htmlspecialchars($v['titulo_puesto']) ?></h6>
                                         <p class="xsmall text-muted mb-0">
                                             <?= htmlspecialchars($v['carrera']) ?> • 
-                                            <span class="<?= $v['estado'] === 'abierta' ? 'text-success' : 'text-danger' ?>">
-                                                <?= strtoupper($v['estado']) ?>
+                                            <?php 
+                                                $today = date('Y-m-d');
+                                                $isExpired = (!empty($v['fecha_limite']) && $v['fecha_limite'] < $today);
+                                                $isClosed = ($v['estado'] === 'cerrada' || $isExpired);
+                                                $displayStatus = $isClosed ? 'CERRADA' : 'ABIERTA';
+                                                $colorClass = $isClosed ? 'text-danger' : 'text-success';
+                                            ?>
+                                            <span class="<?= $colorClass ?> fw-800">
+                                                <?= $displayStatus ?>
+                                                <?php if($isExpired && $v['estado'] === 'abierta'): ?>
+                                                    <i class="fas fa-history ms-1" title="Vencida por fecha"></i>
+                                                <?php endif; ?>
                                             </span>
                                         </p>
                                     </div>
-                                    <div class="text-end">
-                                        <span class="xsmall fw-bold d-block mb-1">LIMITE</span>
-                                        <span class="badge bg-secondary bg-opacity-10 text-white border-0"><?= $v['fecha_limite'] ?></span>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="text-end me-3">
+                                            <span class="xsmall fw-bold d-block mb-1">LIMITE</span>
+                                            <span class="badge bg-secondary bg-opacity-10 text-white border-0"><?= $v['fecha_limite'] ?></span>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <a href="/admin/vacancies/toggle-status?id=<?= $v['id'] ?>" class="btn-ghost" style="width: 45px; height: 45px; border-radius: 12px; padding: 0;" title="<?= $isClosed ? 'Re-abrir' : 'Cerrar' ?> Vacante">
+                                                <i class="fas <?= $isClosed ? 'fa-lock-open text-success' : 'fa-lock text-warning' ?>"></i>
+                                            </a>
+                                            <a href="/admin/vacantes/<?= $v['id'] ?>/postulantes" target="_blank" class="btn-futuristic" style="width: 45px; height: 45px; border-radius: 12px; padding: 0;" title="Ver Postulantes">
+                                                <i class="fas fa-users"></i>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             <?php endforeach; ?>

@@ -10,10 +10,14 @@ class EnvLoader {
 
         $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         foreach ($lines as $line) {
-            if (strpos(trim($line), '#') === 0) continue;
+            $line = trim($line);
+            if (empty($line) || strpos($line, '#') === 0) continue;
+            if (strpos($line, '=') === false) continue;
+
             list($name, $value) = explode('=', $line, 2);
             $name = trim($name);
             $value = trim($value);
+
             // Si el valor está rodeado de comillas (dobles o simples), las removemos
             if (preg_match('/^([\'"])(.*)\1$/', $value, $matches)) {
                 $value = $matches[2];

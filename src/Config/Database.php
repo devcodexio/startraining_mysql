@@ -13,10 +13,10 @@ class Database
     {
         if (self::$conn === null) {
             try {
-                $url = getenv("DATABASE_URL");
+                $url = getenv("DATABASE_URL") ?: ($_ENV['DATABASE_URL'] ?? ($_SERVER['DATABASE_URL'] ?? null));
 
                 if (!$url) {
-                    throw new \Exception("DATABASE_URL no está configurada");
+                    throw new \Exception("DATABASE_URL no está configurada. Verifica tu archivo .env");
                 }
 
                 $db = parse_url($url);

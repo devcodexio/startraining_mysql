@@ -133,5 +133,6 @@ if (!$v) die("Vacante no encontrada");
             }
         });
     </script>
+    <?php require_once __DIR__ . '/../Layouts/ChatBot.php'; ?>
 </body>
 </html>

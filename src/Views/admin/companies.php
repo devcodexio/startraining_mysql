@@ -72,6 +72,11 @@ $totalCompanies = count($companies);
                                     <a href="/admin/empresas/detalle/<?= $c['id'] ?>" class="btn-ghost py-2 px-3" style="font-size: 0.75rem; border-radius: 10px;" title="Ver Detalle">
                                         <i class="fas fa-eye"></i>
                                     </a>
+
+                                    <button class="btn-ghost py-2 px-3" style="font-size: 0.75rem; border-radius: 10px;" 
+                                            onclick="openEmailModal('<?= $c['correo_contacto'] ?>', '<?= htmlspecialchars($c['nombre_comercial']) ?>')" title="Enviar Correo">
+                                        <i class="fas fa-envelope text-primary"></i>
+                                    </button>
                                     
                                     <?php if ($c['estado'] === 'pendiente'): ?>
                                         <button id="toggle-btn-<?= $c['id'] ?>" 
@@ -97,6 +102,39 @@ $totalCompanies = count($companies);
             </table>
         </div>
     </main>
+
+    <!-- Modal: Enviar Correo Personalizado -->
+    <div class="modal-overlay" id="emailModal" style="z-index: 1100;">
+        <div class="modal-glass" style="max-width: 500px; text-align: left; padding: 2.5rem;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-900 mb-0"><i class="fas fa-paper-plane text-primary me-2"></i> Enviar Mensaje</h4>
+                <button onclick="closeEmailModal()" class="btn-ghost p-2"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="form-group mb-4">
+                <label class="xsmall fw-800 text-muted mb-2 ls-1">DESTINATARIO</label>
+                <input type="text" id="mailToEmail" class="form-input" readonly style="background: rgba(255,255,255,0.05);">
+                <input type="hidden" id="mailToName">
+            </div>
+
+            <div class="form-group mb-4">
+                <label class="xsmall fw-800 text-muted mb-2 ls-1">ASUNTO</label>
+                <input type="text" id="mailSubject" class="form-input" placeholder="Ej: Información sobre su cuenta">
+            </div>
+
+            <div class="form-group mb-4">
+                <label class="xsmall fw-800 text-muted mb-2 ls-1">MENSAJE</label>
+                <textarea id="mailMessage" class="form-input" rows="5" style="resize: none;" placeholder="Escriba su mensaje aquí..."></textarea>
+            </div>
+
+            <div class="d-flex gap-3 pt-3">
+                <button onclick="closeEmailModal()" class="btn-ghost flex-1 py-3">Cancelar</button>
+                <button onclick="sendMailAction()" id="btnSendMail" class="btn-futuristic flex-1 py-3">
+                    <i class="fas fa-share me-2"></i> Enviar Ahora
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
     async function toggleCompanyStatus(id, currentStatus) {
@@ -135,6 +173,51 @@ $totalCompanies = count($companies);
         } catch (e) {
             alert('Error de conexión');
             btn.disabled = false;
+        }
+    }
+
+    function openEmailModal(email, name) {
+        document.getElementById('mailToEmail').value = email;
+        document.getElementById('mailToName').value = name;
+        document.getElementById('mailSubject').value = '';
+        document.getElementById('mailMessage').value = '';
+        document.getElementById('emailModal').style.display = 'flex';
+    }
+
+    function closeEmailModal() {
+        document.getElementById('emailModal').style.display = 'none';
+    }
+
+    async function sendMailAction() {
+        const email   = document.getElementById('mailToEmail').value;
+        const name    = document.getElementById('mailToName').value;
+        const subject = document.getElementById('mailSubject').value;
+        const message = document.getElementById('mailMessage').value;
+        const btn     = document.getElementById('btnSendMail');
+
+        if (!subject || !message) return alert('Por favor complete todos los campos');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+        try {
+            const res = await fetch('/admin/empresas/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, name, subject, message })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('¡Correo enviado con éxito!');
+                closeEmailModal();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (e) {
+            alert('Error de conexión');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-share me-2"></i> Enviar Ahora';
         }
     }
     </script>

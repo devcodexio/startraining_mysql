@@ -17,6 +17,10 @@ spl_autoload_register(function ($class) {
 // Load Environment Variables
 \App\Config\EnvLoader::load(__DIR__ . '/../.env');
 
+// Disable error display in production to prevent warnings from breaking JSON responses
+ini_set('display_errors', 0);
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+
 session_start();
 
 $request = $_SERVER['REQUEST_URI'];
@@ -110,9 +114,21 @@ switch (true) {
         $ctrl->store();
         break;
 
+    case ($path === $base_path . 'vacancies/export'):
+        \App\Middleware\AuthMiddleware::check('empresa');
+        $ctrl = new \App\Controllers\VacancyController();
+        $ctrl->export();
+        break;
+
     case ($path === $base_path . 'postulations'):
         \App\Middleware\AuthMiddleware::check('empresa');
         require __DIR__ . '/../src/Views/postulations/list.php';
+        break;
+    
+    case ($path === $base_path . 'postulations/export'):
+        \App\Middleware\AuthMiddleware::check();
+        $ctrl = new \App\Controllers\PostulationController();
+        $ctrl->export();
         break;
 
     case ($path === $base_path . 'company/profile'):
@@ -216,6 +232,24 @@ switch (true) {
         $ctrl->toggleStatus();
         break;
 
+    case ($path === $base_path . 'admin/empresas/send-email'):
+        \App\Middleware\AuthMiddleware::check('admin');
+        $ctrl = new \App\Controllers\CompanyController();
+        $ctrl->sendCustomEmail();
+        break;
+
+    case ($path === $base_path . 'admin/empresas/export'):
+        \App\Middleware\AuthMiddleware::check('admin');
+        $ctrl = new \App\Controllers\AdminController();
+        $ctrl->exportCompanies();
+        break;
+
+    case ($path === $base_path . 'admin/carreras/export'):
+        \App\Middleware\AuthMiddleware::check('admin');
+        $ctrl = new \App\Controllers\AdminController();
+        $ctrl->exportCarreras();
+        break;
+
     case ($path === $base_path . 'admin/carreras'):
         \App\Middleware\AuthMiddleware::check('admin');
         $ctrl = new \App\Controllers\AdminController();
@@ -226,6 +260,12 @@ switch (true) {
         \App\Middleware\AuthMiddleware::check('admin');
         $ctrl = new \App\Controllers\AdminController();
         $ctrl->storeCarrera();
+        break;
+
+    case ($path === $base_path . 'admin/carreras/update'):
+        \App\Middleware\AuthMiddleware::check('admin');
+        $ctrl = new \App\Controllers\AdminController();
+        $ctrl->updateCarrera();
         break;
 
     case ($path === $base_path . 'admin/carreras/delete'):
@@ -252,10 +292,22 @@ switch (true) {
         $ctrl->toggleStatus();
         break;
 
+    case ($path === $base_path . 'admin/vacancies/applicants'):
+        \App\Middleware\AuthMiddleware::check('admin');
+        $ctrl = new \App\Controllers\AdminController();
+        $ctrl->getApplicantsByVacancy();
+        break;
+
     case (preg_match('/^\/admin\/empresas\/detalle\/(\d+)$/', $path, $matches)):
         \App\Middleware\AuthMiddleware::check('admin');
         $id = $matches[1];
         require __DIR__ . '/../src/Views/admin/company_detail.php';
+        break;
+
+    case (preg_match('/^\/admin\/vacantes\/(\d+)\/postulantes$/', $path, $matches)):
+        \App\Middleware\AuthMiddleware::check('admin');
+        $vacante_id = $matches[1];
+        require __DIR__ . '/../src/Views/admin/vacancy_applicants.php';
         break;
 
     case ($path === $base_path . 'logout'):

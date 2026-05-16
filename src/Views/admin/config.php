@@ -29,7 +29,7 @@ $config = $configModel->getSettings();
             <?php endif; ?>
         </header>
 
-        <form action="/admin/save-config" method="POST" id="mainConfigForm">
+        <form action="/admin/save-config" method="POST" id="mainConfigForm" enctype="multipart/form-data">
             <div class="row g-4">
                 <div class="col-8">
                     <!-- Sección: General -->
@@ -37,6 +37,25 @@ $config = $configModel->getSettings();
                         <h3 class="fw-800 mb-5 d-flex align-items-center gap-3">
                             <i class="fas fa-desktop text-primary"></i> Apariencia & Marca
                         </h3>
+
+                        <div class="row mb-5 align-items-center">
+                            <div class="col-4">
+                                <label class="mb-2 text-muted xsmall fw-800 ls-2">LOGO DEL SITIO</label>
+                                <div class="p-3 mb-2" style="background: rgba(var(--primary-rgb),0.05); border: 1px dashed rgba(var(--primary-rgb),0.3); border-radius: 12px; text-align: center;">
+                                    <?php if(!empty($config['logo_sitio'])): ?>
+                                        <img src="<?= htmlspecialchars($config['logo_sitio']) ?>" alt="Logo actual" style="max-height: 60px; max-width: 100%; border-radius: 8px;">
+                                    <?php else: ?>
+                                        <span class="text-muted small">Sin logo</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="col-8">
+                                <label class="mb-2 text-muted xsmall fw-800 ls-2">SUBIR NUEVO LOGO</label>
+                                <input type="file" name="logo_sitio" class="form-input" accept="image/*" style="padding: 0.8rem;">
+                                <p class="text-muted xsmall mt-1 mb-0">Se recomienda PNG transparente. Tamaño ideal: 200x50 px.</p>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-6 form-group mb-5">
                                 <label class="mb-2 text-muted xsmall fw-800 ls-2">NOMBRE DEL SITIO</label>
@@ -101,6 +120,18 @@ $config = $configModel->getSettings();
                         <div class="form-group">
                             <label class="mb-2 text-muted xsmall fw-800 ls-2">MENSAJE PARA USUARIOS</label>
                             <input type="text" name="mantenimiento_msg" class="form-input" placeholder="Ejm: Estamos mejorando para ti." value="<?= htmlspecialchars($config['mantenimiento_msg'] ?? 'Estamos en mantenimiento. Volveremos pronto.') ?>">
+                        </div>
+                    </div>
+
+                    <!-- Sección: Legal -->
+                    <div class="glass-card mt-4 animate shadow-sm" style="padding: 3rem;">
+                        <h3 class="fw-800 mb-5 d-flex align-items-center gap-3">
+                            <i class="fas fa-gavel text-primary"></i> Aspectos Legales
+                        </h3>
+                        <div class="form-group">
+                            <label class="mb-2 text-muted xsmall fw-800 ls-2">TÉRMINOS Y CONDICIONES (REGISTRO DE EMPRESA)</label>
+                            <textarea name="terminos_condiciones" class="form-input" rows="5" style="border-radius: 15px; resize: vertical; line-height: 1.6;"><?= htmlspecialchars($config['terminos_condiciones'] ?? 'Acepto los términos y condiciones.') ?></textarea>
+                            <p class="text-muted xsmall mt-2">Este texto aparecerá junto al checkbox de aceptación en el formulario de registro para empresas.</p>
                         </div>
                     </div>
                 </div>

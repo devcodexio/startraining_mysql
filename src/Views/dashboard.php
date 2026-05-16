@@ -137,6 +137,35 @@ $firstName = explode(' ', $userName)[0];
                     </div>
                 </div>
 
+                <!-- Report Center -->
+                <div class="glass-card" style="padding: 1.75rem; border: 1px solid rgba(59, 130, 246, 0.2);">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <i class="fas fa-file-excel text-success"></i>
+                        <h3 class="fw-700 mb-0" style="font-size:0.95rem;">Centro de Reportes</h3>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        <?php if ($userType === 'empresa'): ?>
+                            <a href="/postulations/export" class="btn-ghost w-100" style="justify-content:flex-start; padding:0.6rem 1rem; border-color: rgba(16, 185, 129, 0.2);">
+                                <i class="fas fa-download text-success"></i> Exportar Postulantes
+                            </a>
+                            <a href="/vacancies/export" class="btn-ghost w-100" style="justify-content:flex-start; padding:0.6rem 1rem; border-color: rgba(59, 130, 246, 0.2);">
+                                <i class="fas fa-download text-primary"></i> Exportar Mis Vacantes
+                            </a>
+                        <?php else: ?>
+                            <a href="/admin/empresas/export" class="btn-ghost w-100" style="justify-content:flex-start; padding:0.6rem 1rem; border-color: rgba(59, 130, 246, 0.2);">
+                                <i class="fas fa-building text-primary"></i> Reporte de Empresas
+                            </a>
+                            <a href="/admin/carreras/export" class="btn-ghost w-100" style="justify-content:flex-start; padding:0.6rem 1rem; border-color: rgba(16, 185, 129, 0.2);">
+                                <i class="fas fa-graduation-cap text-success"></i> Reporte de Carreras
+                            </a>
+                            <a href="/postulations/export" class="btn-ghost w-100" style="justify-content:flex-start; padding:0.6rem 1rem; border-color: rgba(245, 158, 11, 0.2);">
+                                <i class="fas fa-users text-warning"></i> Reporte Global Postulantes
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                    <p class="xsmall text-muted mt-3 mb-0"><i class="fas fa-info-circle me-1"></i> Formato Excel (.xls)</p>
+                </div>
+
                 <!-- Mini info card -->
                 <div class="glass-card" style="padding: 1.5rem; background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(6,182,212,0.05));">
                     <div class="d-flex align-items-center gap-3 mb-2">
@@ -158,6 +187,7 @@ $firstName = explode(' ', $userName)[0];
         </div>
 
         <?php require_once __DIR__ . '/../Layouts/Footer.php'; ?>
+        <?php require_once __DIR__ . '/../Layouts/ChatBot.php'; ?>
     </main>
 </body>
 </html>

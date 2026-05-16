@@ -1,0 +1,62 @@
+.ls-1 { letter-spacing: 1px; }
+    .ls-2 { letter-spacing: 2px; text-transform: uppercase; font-size: 0.85rem; }
+    .shadow-icon { filter: drop-shadow(0 0 5px rgba(var(--primary-rgb), 0.3)); }
+    
+    .contact-pill {
+        background: rgba(var(--primary-rgb), 0.05);
+        padding: 10px 22px;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        border: 1px solid var(--border-glass);
+        transition: all 0.3s ease;
+    }
+    .hover-scale:hover { transform: scale(1.05); background: rgba(var(--primary-rgb), 0.1); }
+
+    .social-btn-box {
+        width: 48px; height: 48px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid var(--border-glass);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--text-primary);
+        font-size: 1.2rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        text-decoration: none !important;
+    }
+    .social-btn-box:hover { transform: translateY(-8px) rotate(5deg); color: white !important; }
+
+    .social-btn-box.fb:hover { background: #1877F2 !important; border-color: #1877F2 !important; }
+    .social-btn-box.tw:hover { background: #000 !important; border-color: #333 !important; }
+    .social-btn-box.in:hover { background: #0A66C2 !important; border-color: #0A66C2 !important; }
+    .social-btn-box.ig:hover { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%) !important; border-color: transparent !important; }
+
+    .stat-mini h4 { line-height: 1; }
+    .stat-mini p { font-size: 0.55rem; letter-spacing: 1px; opacity: 0.7; }
+
+    @media (min-width: 1025px) {
+        .text-md-end { text-align: right !important; }
+        .social-links-grid { justify-content: flex-end; }
+    }
+
+    @media (max-width: 1024px) {
+        .footer-modern {
+            padding: 2.5rem 2rem !important;
+            border-radius: 25px !important;
+            text-align: center;
+        }
+        .footer-col {
+            text-align: center !important;
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+        }
+        .social-links-grid {
+            justify-content: center !important;
+        }
+        .text-md-end {
+            text-align: center !important;
+        }
+        .logo-text { justify-content: center; }
+    }

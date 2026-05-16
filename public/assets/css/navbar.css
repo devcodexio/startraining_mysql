@@ -1,0 +1,123 @@
+/* =============================================
+           NAV — DESKTOP (fixed, glass pill)
+        ============================================= */
+        .nav-main {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            right: 1.5rem;
+            height: 85px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4rem;
+            z-index: 2000;
+            border-radius: 30px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .nav-logo {
+            font-size: 2rem;
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        /* Desktop links */
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        /* Hamburger button — hidden on desktop */
+        .nav-hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            z-index: 2000;
+            position: relative;
+        }
+
+        .nav-hamburger span {
+            display: block;
+            width: 26px;
+            height: 2px;
+            background: #fff;
+            border-radius: 2px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        /* Animated X state */
+        .nav-hamburger.is-open span:nth-child(1) {
+            transform: translateY(7px) rotate(45deg);
+        }
+
+        .nav-hamburger.is-open span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .nav-hamburger.is-open span:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg);
+        }
+
+        /* Mobile drawer — full screen overlay */
+        .nav-drawer {
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1500;
+            background: rgba(6, 7, 10, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: block;
+            padding-top: 25vh;
+            overflow-y: auto;
+        }
+
+        .nav-drawer.is-open {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Links dentro del drawer */
+        .nav-drawer .nav-item-mobile {
+            display: block;
+            width: 100%;
+            max-width: 340px;
+            margin: 0 auto;
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #fff;
+            text-decoration: none;
+            padding: 1.1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+            transition: color 0.2s;
+        }
+
+        .nav-drawer .nav-item-mobile:hover {
+            color: var(--primary, #00f2fe);
+        }
+
+        .nav-drawer .btn-futuristic {
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }

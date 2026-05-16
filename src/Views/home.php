@@ -5,6 +5,7 @@ use App\Models\ConfigModel;
 $configModel = new ConfigModel();
 $config = $configModel->getSettings();
 $siteName = $config['nombre_sitio'] ?? 'StarTraining';
+$logoSitio = $config['logo_sitio'] ?? '';
 
 $vacancyModel = new VacancyModel();
 $search = $_GET['search'] ?? '';
@@ -21,414 +22,31 @@ $vacancies = $vacancyModel->getAll(['search' => $search, 'carrera' => $carrera, 
     <title>StarTraining | Encuentra tus Prácticas</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        /* =============================================
-           RESET & BASE
-        ============================================= */
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        /* =============================================
-           NAV — DESKTOP (fixed, glass pill)
-        ============================================= */
-        .nav-main {
-            position: fixed;
-            top: 1.5rem;
-            left: 1.5rem;
-            right: 1.5rem;
-            height: 85px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 4rem;
-            z-index: 2000;
-            border-radius: 30px;
-            border: 1px solid var(--border-glass);
-        }
-
-        .nav-logo {
-            font-size: 2rem;
-            margin: 0;
-            flex-shrink: 0;
-        }
-
-        /* Desktop links */
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 2.5rem;
-        }
-
-        /* Hamburger button — hidden on desktop */
-        .nav-hamburger {
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            gap: 5px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 6px;
-            z-index: 2000;
-            position: relative;
-        }
-
-        .nav-hamburger span {
-            display: block;
-            width: 26px;
-            height: 2px;
-            background: #fff;
-            border-radius: 2px;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-
-        /* Animated X state */
-        .nav-hamburger.is-open span:nth-child(1) {
-            transform: translateY(7px) rotate(45deg);
-        }
-
-        .nav-hamburger.is-open span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .nav-hamburger.is-open span:nth-child(3) {
-            transform: translateY(-7px) rotate(-45deg);
-        }
-
-        /* Mobile drawer — full screen overlay */
-        .nav-drawer {
-            visibility: hidden;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1500;
-            background: rgba(6, 7, 10, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            display: block;
-            padding-top: 25vh;
-            overflow-y: auto;
-        }
-
-        .nav-drawer.is-open {
-            visibility: visible;
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        /* Links dentro del drawer */
-        .nav-drawer .nav-item-mobile {
-            display: block;
-            width: 100%;
-            max-width: 340px;
-            margin: 0 auto;
-            font-size: 1.3rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            color: #fff;
-            text-decoration: none;
-            padding: 1.1rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            text-align: center;
-            transition: color 0.2s;
-        }
-
-        .nav-drawer .nav-item-mobile:hover {
-            color: var(--primary, #00f2fe);
-        }
-
-        .nav-drawer .btn-futuristic {
-            margin-top: 2rem;
-            width: 100%;
-            max-width: 340px;
-            text-align: center;
-            padding: 1rem 2rem;
-            font-size: 1rem;
-        }
-
-        /* =============================================
-           HERO
-        ============================================= */
-        .hero {
-            padding: 10rem 1.5rem 4rem;
-            text-align: center;
-        }
-
-        .hero h1 {
-            font-size: clamp(2.2rem, 6vw, 5rem);
-            margin-bottom: 1.5rem;
-            line-height: 1.15;
-        }
-
-        .hero p {
-            font-size: clamp(1rem, 2.5vw, 1.5rem);
-            color: var(--text-muted);
-            max-width: 800px;
-            margin: 0 auto 3rem;
-        }
-
-        /* Search bar */
-        .search-hero {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0.5rem;
-            border-radius: 50px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .search-hero input {
-            background: transparent;
-            border: none;
-            padding: 1rem 1.5rem;
-            color: #fff;
-            flex: 1 1 180px;
-            min-width: 0;
-            outline: none;
-            font-size: 1rem;
-        }
-
-        .search-hero button {
-            border-radius: 40px;
-            flex-shrink: 0;
-            padding: 0.85rem 2rem;
-            font-size: 0.9rem;
-            width: auto;
-        }
-
-        /* =============================================
-           VACANCIES SECTION
-        ============================================= */
-        .vacancies-container {
-            max-width: 1100px;
-            margin: 0 auto 10rem;
-            padding: 0 1.5rem;
-        }
-
-        .vacancies-header {
-            margin-bottom: 2.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .vacancies-header h2 {
-            font-size: clamp(1.5rem, 4vw, 2.5rem);
-        }
-
-        .vacancies-header p {
-            color: var(--text-muted);
-            margin: 0.25rem 0 0;
-        }
-
-        /* Vacancy card */
-        .vacancy-card {
-            display: flex;
-            gap: 2rem;
-            padding: 2rem;
-            border-radius: 30px;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .vacancy-logo {
-            width: 80px;
-            height: 80px;
-            min-width: 80px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.02);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border: 1px solid var(--glass-border);
-            flex-shrink: 0;
-        }
-
-        .vacancy-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .vacancy-body {
-            flex: 1 1 0;
-            min-width: 0;
-        }
-
-        .vacancy-title-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 0.5rem;
-        }
-
-        .vacancy-title-row h3 {
-            font-size: clamp(1.1rem, 3vw, 1.6rem);
-            margin: 0;
-        }
-
-        .vacancy-badge {
-            background: rgba(0, 242, 254, 0.1);
-            color: var(--primary);
-            font-size: 0.8rem;
-            padding: 6px 15px;
-            border-radius: 20px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .vacancy-meta {
-            color: var(--text-muted);
-            font-size: clamp(0.9rem, 2vw, 1.1rem);
-            margin-bottom: 1rem;
-        }
-
-        .vacancy-description {
-            color: var(--text-muted);
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            font-size: clamp(0.85rem, 2vw, 1rem);
-        }
-
-        .vacancy-footer {
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .vacancy-location {
-            color: var(--text-muted);
-            font-size: 0.875rem;
-        }
-
-        .vacancy-location .fa-map-marker-alt {
-            color: var(--primary);
-            margin-right: 0.5rem;
-        }
-
-        /* =============================================
-           RESPONSIVE BREAKPOINTS
-        ============================================= */
-
-        /* ---- Tablet & Mobile (≤ 1024px) ---- */
-        @media (max-width: 1024px) {
-            .nav-main {
-                top: 1rem;
-                left: 1rem;
-                right: 1rem;
-                height: 70px;
-                padding: 0 1.5rem;
-                border-radius: 20px;
-            }
-
-            .nav-logo {
-                font-size: 1.5rem;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .nav-hamburger {
-                display: flex;
-            }
-
-            .hero {
-                padding: 8rem 1.25rem 3rem;
-            }
-
-            .vacancy-card {
-                padding: 1.5rem;
-                gap: 1.25rem;
-            }
-
-            .search-hero {
-                border-radius: 20px;
-                padding: 0.75rem;
-            }
-
-            .search-hero input {
-                padding: 0.75rem 1rem;
-            }
-
-            .search-hero button {
-                width: 100%;
-            }
-        }
-
-        /* ---- Mobile (≤ 480px) ---- */
-        @media (max-width: 480px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .vacancy-card {
-                flex-direction: column;
-            }
-
-            .vacancy-logo {
-                width: 64px;
-                height: 64px;
-                min-width: 64px;
-                border-radius: 16px;
-            }
-
-            .vacancy-footer {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .vacancy-footer a {
-                width: 100%;
-                text-align: center;
-            }
-
-            .vacancies-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/assets/css/navbar.css">
+    <link rel="stylesheet" href="/assets/css/home.css">
 </head>
 
-<body class="animate">
+<body>
 
     <!-- =============================================
          NAV
     ============================================= -->
-    <nav class="nav-main glass animate">
-        <h2 class="nav-logo logo-text"><?= htmlspecialchars($siteName) ?></h2>
+    <nav class="nav-main glass">
+        <a href="/" class="nav-logo flex items-center gap-3" style="text-decoration:none;">
+            <?php if ($logoSitio): ?>
+                <div class="relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-300"></div>
+                    <img src="<?= htmlspecialchars($logoSitio) ?>" alt="Logo" class="relative w-12 h-12 object-cover rounded-[1rem] shadow-lg border border-white/20 transform hover:scale-105 transition-all duration-300">
+                </div>
+                <h2 class="logo-text m-0 text-xl font-black tracking-tight" style="background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; drop-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <?= htmlspecialchars($siteName) ?>
+                </h2>
+            <?php else: ?>
+                <h2 class="logo-text m-0" style="font-size: 1.8rem;"><?= htmlspecialchars($siteName) ?></h2>
+            <?php endif; ?>
+        </a>
 
         <!-- Desktop links -->
         <div class="nav-links" style="gap: 1.5rem;">
@@ -436,7 +54,7 @@ $vacancies = $vacancyModel->getAll(['search' => $search, 'carrera' => $carrera, 
                 style="background:transparent;color:var(--text-primary);text-decoration:none;font-size:1.1rem;letter-spacing:1px;">
                 LOGIN
             </a>
-            <a href="/register-company" class="btn-futuristic" style="padding:0.8rem 2rem;font-size:0.9rem;">
+            <a href="/register-company" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-[0_0_15px_rgba(0,242,254,0.5)] hover:shadow-[0_0_25px_rgba(0,242,254,0.8)] transform hover:-translate-y-1 transition-all duration-300">
                 Registrarse &rarr;
             </a>
         </div>
@@ -461,68 +79,108 @@ $vacancies = $vacancyModel->getAll(['search' => $search, 'carrera' => $carrera, 
     <!-- =============================================
          HERO
     ============================================= -->
-    <header class="hero animate">
-        <h1 class="fw-800">
-            <span class="text-gradient">El impulso que tu carrera</span><br>necesita está aquí.
-        </h1>
-        <p>Conectamos a estudiantes estrella con las empresas más innovadoras del Perú.</p>
+    <header class="hero animate relative overflow-hidden" style="background: url('/assets/img/hero_bg.png') center/cover no-repeat; border-bottom-left-radius: 50px; border-bottom-right-radius: 50px; margin-bottom: 3rem; padding-bottom: 6rem;">
+        <!-- Subtle overlay to make text pop -->
+        <div class="absolute inset-0 bg-white/30 backdrop-blur-[2px] z-0"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-white/70 z-0"></div>
+        
+        <div class="relative z-10">
+            <h1 class="fw-800" style="text-shadow: 0 4px 20px rgba(255,255,255,0.8);">
+                <span class="text-gradient">El impulso que tu carrera</span><br>necesita está aquí.
+            </h1>
+            <p style="text-shadow: 0 2px 10px rgba(255,255,255,0.9); font-weight: 500; color: #334155;">Conectamos a estudiantes estrella con las empresas más innovadoras del Perú.</p>
 
-        <form action="/" method="GET" class="search-hero">
-            <input type="text" name="search" placeholder="Buscar por puesto o empresa..."
-                value="<?= htmlspecialchars($search) ?>">
-            <button type="submit" class="btn-premium">Buscar Ahora</button>
-        </form>
+            <form action="/" method="GET" class="search-hero shadow-2xl backdrop-blur-md bg-white/40 border-white/50" style="box-shadow: 0 20px 40px rgba(0,0,0,0.08);">
+                <input type="text" name="search" placeholder="Buscar por puesto o empresa..."
+                    value="<?= htmlspecialchars($search) ?>" style="color: #0f172a; font-weight: 500;">
+                <button type="submit" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-[0_0_15px_rgba(0,242,254,0.4)] hover:shadow-[0_0_25px_rgba(0,242,254,0.7)] transform hover:-translate-y-1 transition-all duration-300 border-none outline-none">Buscar Ahora</button>
+            </form>
+        </div>
     </header>
 
 
     <!-- =============================================
-         VACANCIES
+         VACANCIES GRID
     ============================================= -->
-    <div class="vacancies-container">
-        <div class="vacancies-header">
-            <div>
-                <h2>Vacantes Recientes</h2>
-                <p>Explora las últimas oportunidades de prácticas pre-profesionales.</p>
+    <section class="max-w-7xl mx-auto px-6 py-20">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div class="animate-fade-in">
+                <h2 class="text-4xl font-black text-slate-900 mb-2">Vacantes Recientes</h2>
+                <p class="text-slate-500 text-lg">Explora las últimas oportunidades de prácticas pre-profesionales.</p>
             </div>
-            <span class="text-muted small fw-600"><?= count($vacancies) ?> Convocatorias encontradas</span>
+            <span class="bg-white/50 backdrop-blur-md text-slate-600 text-xs font-black tracking-widest px-6 py-3 rounded-full border border-white/80 shadow-sm animate-fade-in">
+                <?= count($vacancies) ?> CONVOCATORIAS ENCONTRADAS
+            </span>
         </div>
 
-        <?php foreach ($vacancies as $v): ?>
-            <div class="glass-card vacancy-card animate">
-
-                <div class="vacancy-logo">
-                    <img src="<?= $v['foto_perfil'] ?: 'https://placehold.co/100x100/06070a/00f2fe?text=LOGO' ?>"
-                        alt="Logo de <?= htmlspecialchars($v['nombre_comercial']) ?>">
-                </div>
-
-                <div class="vacancy-body">
-                    <div class="vacancy-title-row">
-                        <h3><?= htmlspecialchars($v['titulo_puesto']) ?></h3>
-                        <span class="vacancy-badge"><?= htmlspecialchars($v['modalidad']) ?></span>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <?php foreach ($vacancies as $v): ?>
+                <div class="group relative bg-white/70 backdrop-blur-2xl border border-white/60 rounded-[3rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_70px_rgba(59,130,246,0.15)] transition-all duration-500 hover:-translate-y-3 flex flex-col h-full animate-fade-up">
+                    
+                    <!-- Top Section: Logo & Status -->
+                    <div class="flex justify-between items-start mb-8">
+                        <div class="w-20 h-20 rounded-[1.5rem] overflow-hidden shadow-2xl border-4 border-white transform group-hover:scale-110 transition-transform duration-500">
+                            <img src="<?= $v['foto_perfil'] ?: 'https://placehold.co/100x100/06070a/00f2fe?text=LOGO' ?>"
+                                alt="Logo" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex flex-col items-end gap-2">
+                            <span class="bg-cyan-50 text-cyan-600 text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-xl border border-cyan-100 shadow-sm">
+                                <?= htmlspecialchars($v['modalidad']) ?>
+                            </span>
+                        </div>
                     </div>
 
-                    <p class="vacancy-meta">
-                        <?= htmlspecialchars($v['nombre_comercial']) ?>
-                        • <span class="text-primary"><?= htmlspecialchars($v['carrera']) ?></span>
-                    </p>
+                    <!-- Middle Section: Title & Company -->
+                    <div class="flex-grow">
+                        <h3 class="text-2xl font-extrabold text-slate-900 mb-3 leading-tight group-hover:text-cyan-600 transition-colors duration-300">
+                            <?= htmlspecialchars($v['titulo_puesto']) ?>
+                        </h3>
+                        <p class="text-sm font-bold text-slate-400 mb-5 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-cyan-400 rounded-full"></span>
+                            <?= htmlspecialchars($v['nombre_comercial']) ?>
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <?php 
+                                $car_list = explode(', ', $v['carrera'] ?? '');
+                                foreach($car_list as $c_name): if(empty($c_name)) continue;
+                            ?>
+                                <span class="bg-blue-50/50 text-blue-600 text-[11px] font-extrabold px-3 py-1 rounded-lg border border-blue-100/50">
+                                    <?= htmlspecialchars($c_name) ?>
+                                </span>
+                            <?php endforeach; ?>
+                        </div>
 
-                    <p class="vacancy-description"><?= htmlspecialchars($v['descripcion_puesto']) ?></p>
-
-                    <div class="vacancy-footer">
-                        <span class="vacancy-location">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <?= htmlspecialchars($v['ubicacion'] ?: 'Remoto / Perú') ?>
-                        </span>
-                        <a href="/vacante/<?= $v['id'] ?>" class="btn-premium px-5">Ver Detalles &rarr;</a>
+                        <p class="text-slate-500 text-sm line-clamp-3 mb-8 leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">
+                            <?= htmlspecialchars($v['descripcion_puesto']) ?>
+                        </p>
                     </div>
-                </div>
 
-            </div>
-        <?php endforeach; ?>
-    </div>
+                    <!-- Bottom Section: Location & CTA -->
+                    <div class="pt-8 border-t border-slate-100 flex items-center justify-between mt-auto">
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Ubicación</span>
+                            <span class="text-slate-700 text-xs font-bold flex items-center gap-1.5">
+                                <i class="fas fa-map-marker-alt text-cyan-500"></i>
+                                <?= htmlspecialchars($v['ubicacion'] ?: 'Remoto / Perú') ?>
+                            </span>
+                        </div>
+                        <a href="/vacante/<?= $v['id'] ?>" 
+                           class="relative z-10 inline-flex items-center justify-center bg-slate-900 text-white text-[11px] font-black tracking-widest py-4 px-8 rounded-2xl hover:bg-cyan-600 hover:shadow-cyan-200 transition-all duration-300 shadow-xl shadow-slate-200">
+                            DETALLES <i class="fas fa-arrow-right ml-2 text-[9px] transform group-hover:translateX-1 transition-transform"></i>
+                        </a>
+                    </div>
+
+                    <!-- Transparent Global Link Overlay -->
+                    <a href="/vacante/<?= $v['id'] ?>" class="absolute inset-0 z-0 rounded-[3rem]" aria-label="Ver detalles de <?= htmlspecialchars($v['titulo_puesto']) ?>"></a>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </section>
 
 
     <?php require_once __DIR__ . '/../Layouts/Footer.php'; ?>
+    <?php require_once __DIR__ . '/../Layouts/ChatBot.php'; ?>
 
 
     <!-- =============================================

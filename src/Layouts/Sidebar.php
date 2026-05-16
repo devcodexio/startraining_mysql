@@ -3,6 +3,7 @@ use App\Models\ConfigModel;
 $configModel = new ConfigModel();
 $config = $configModel->getSettings();
 $siteName = $config['nombre_sitio'] ?? 'StarTraining';
+$logoSitio = $config['logo_sitio'] ?? '';
 
 $userType   = $_SESSION['user_type'] ?? 'empresa';
 $userName   = $_SESSION['user_nombre'] ?? 'Usuario';
@@ -15,14 +16,41 @@ $imgSrc = $profileImg ?: $avatarFallback;
 $currentUrl = $_SERVER['REQUEST_URI'];
 ?>
 <aside class="sidebar" id="mainSidebar">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+/* Override default collapse behavior to show icons only */
+@media (min-width: 769px) {
+    .sidebar { transition: width 0.3s ease; overflow-x: hidden; }
+    .sidebar.collapsed { width: 85px !important; transform: none !important; }
+    .sidebar.collapsed .sidebar-texts,
+    .sidebar.collapsed .sidebar-profile-texts,
+    .sidebar.collapsed .sidebar-profile-role,
+    .sidebar.collapsed .nav-section-label,
+    .sidebar.collapsed .nav-link-text { display: none !important; }
+    
+    .sidebar.collapsed .sidebar-profile i { display: none !important; }
+    .sidebar.collapsed .nav-link { justify-content: center; padding: 1rem 0; }
+    .sidebar.collapsed .nav-link i { margin-right: 0 !important; font-size: 1.25rem; }
+    .sidebar.collapsed .sidebar-logo { padding-left: 0; padding-right: 0; justify-content: center; }
+    
+    .main-content.expanded { margin-left: 85px !important; }
+    .top-header.expanded { left: 85px !important; width: calc(100% - 85px) !important; }
+}
+</style>
 
-    <div class="sidebar-logo">
-        <!-- Devoryn-style grid icon -->
-        <div class="sidebar-grid-icon" style="margin-bottom:0.75rem;">
-            <?php for($i=0;$i<9;$i++): ?><span></span><?php endfor; ?>
+
+    <div class="sidebar-logo flex items-center gap-3" style="padding: 1.5rem 1rem;">
+        <?php if ($logoSitio): ?>
+            <img src="<?= htmlspecialchars($logoSitio) ?>" alt="Logo" class="w-10 h-10 rounded-lg object-cover flex-shrink-0" style="width:40px; height:40px;">
+        <?php else: ?>
+            <div class="sidebar-grid-icon flex-shrink-0" style="margin-bottom:0;">
+                <?php for($i=0;$i<9;$i++): ?><span></span><?php endfor; ?>
+            </div>
+        <?php endif; ?>
+        <div class="sidebar-texts flex flex-col justify-center overflow-hidden whitespace-nowrap transition-all duration-300">
+            <span class="logo-text text-lg font-bold leading-tight" style="margin:0;"><?= htmlspecialchars($siteName) ?></span>
+            <span class="logo-tag text-xs text-gray-400">Recruitment Platform</span>
         </div>
-        <span class="logo-text"><?= htmlspecialchars($siteName) ?></span>
-        <span class="logo-tag">Recruitment Platform</span>
     </div>
 
     <!-- User Profile Widget -->
@@ -32,73 +60,65 @@ $currentUrl = $_SERVER['REQUEST_URI'];
              onerror="this.src='<?= $avatarFallback ?>'"
              alt="<?= htmlspecialchars($userName) ?>"
              class="sidebar-profile-img">
-        <div style="overflow:hidden; flex:1;">
+        <div class="sidebar-profile-texts" style="overflow:hidden; flex:1;">
             <div class="sidebar-profile-name"><?= htmlspecialchars($userName) ?></div>
             <div class="sidebar-profile-role"><?= ucfirst($userType) ?></div>
         </div>
-        <i class="fas fa-chevron-down" style="font-size:0.6rem; color:var(--text-muted); align-self:center; flex-shrink:0;"></i>
-    </a>
+        <i class="fas fa-chevron-down" style="font-size:0.6rem; color:var(--text-muted); align-self:center; flex-shrink:0;"></i> <span class="nav-link-text"> </span> </a>
 
     <nav class="nav-group">
         <a href="/dashboard" class="nav-link <?= $currentUrl === '/dashboard' ? 'active' : '' ?>">
-            <i class="fas fa-home"></i> Dashboard
-        </a>
+            <i class="fas fa-home"></i> <span class="nav-link-text">Dashboard</span> </a>
 
         <?php if ($userType === 'empresa'): ?>
 
             <span class="nav-section-label">Gestión</span>
 
             <a href="/vacancies" class="nav-link <?= $currentUrl === '/vacancies' ? 'active' : '' ?>">
-                <i class="fas fa-briefcase"></i> Convocatorias
-            </a>
+                <i class="fas fa-briefcase"></i> <span class="nav-link-text">Convocatorias</span> </a>
             <a href="/vacancies/expired" class="nav-link <?= $currentUrl === '/vacancies/expired' ? 'active' : '' ?>">
-                <i class="fas fa-archive"></i> Finalizadas
-            </a>
+                <i class="fas fa-archive"></i> <span class="nav-link-text">Finalizadas</span> </a>
             <a href="/postulations" class="nav-link <?= str_starts_with($currentUrl, '/postulations') ? 'active' : '' ?>">
-                <i class="fas fa-users"></i> Candidatos
-            </a>
+                <i class="fas fa-users"></i> <span class="nav-link-text">Candidatos</span> </a>
+            <a href="/postulations/export" class="nav-link">
+                <i class="fas fa-download"></i> <span class="nav-link-text">Backups</span> </a>
 
             <span class="nav-section-label">Cuenta</span>
 
             <a href="/company/profile" class="nav-link <?= $currentUrl === '/company/profile' ? 'active' : '' ?>">
-                <i class="fas fa-user-circle"></i> Mi Perfil
-            </a>
+                <i class="fas fa-user-circle"></i> <span class="nav-link-text">Mi Perfil</span> </a>
 
         <?php else: ?>
 
             <span class="nav-section-label">Administración</span>
 
             <a href="/admin/empresas" class="nav-link <?= str_starts_with($currentUrl, '/admin/empresas') ? 'active' : '' ?>">
-                <i class="fas fa-building"></i> Empresas
-            </a>
+                <i class="fas fa-building"></i> <span class="nav-link-text">Empresas</span> </a>
             <a href="/admin/carreras" class="nav-link <?= str_starts_with($currentUrl, '/admin/carreras') ? 'active' : '' ?>">
-                <i class="fas fa-graduation-cap"></i> Carreras
-            </a>
+                <i class="fas fa-graduation-cap"></i> <span class="nav-link-text">Carreras</span> </a>
 
             <span class="nav-section-label">Convocatorias</span>
             <a href="/admin/vacancies" class="nav-link <?= $currentUrl === '/admin/vacancies' ? 'active' : '' ?>">
-                <i class="fas fa-briefcase"></i> Activas
-            </a>
+                <i class="fas fa-briefcase"></i> <span class="nav-link-text">Activas</span> </a>
             <a href="/admin/vacancies/expired" class="nav-link <?= $currentUrl === '/admin/vacancies/expired' ? 'active' : '' ?>">
-                <i class="fas fa-archive"></i> Cerradas
-            </a>
+                <i class="fas fa-archive"></i> <span class="nav-link-text">Cerradas</span> </a>
 
             <span class="nav-section-label">Sistema</span>
 
             <a href="/admin/config" class="nav-link <?= $currentUrl === '/admin/config' ? 'active' : '' ?>">
-                <i class="fas fa-shield-alt"></i> Configuración
-            </a>
+                <i class="fas fa-shield-alt"></i> <span class="nav-link-text">Configuración</span> </a>
+            <a href="/postulations/export" class="nav-link">
+                <i class="fas fa-download"></i> <span class="nav-link-text">Backups</span> </a>
             <a href="/admin/profile" class="nav-link <?= $currentUrl === '/admin/profile' ? 'active' : '' ?>">
-                <i class="fas fa-user-shield"></i> Mi Perfil
-            </a>
+                <i class="fas fa-user-shield"></i> <span class="nav-link-text">Mi Perfil</span> </a>
 
         <?php endif; ?>
     </nav>
 
     <div class="sidebar-bottom">
         <a href="/logout" class="nav-link danger">
-            <i class="fas fa-arrow-right-from-bracket"></i> Cerrar Sesión
-        </a>
+            <i class="fas fa-arrow-right-from-bracket"></i> <span class="nav-link-text">Cerrar Sesión
+        </span> </a>
     </div>
 </aside>
 

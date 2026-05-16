@@ -14,39 +14,7 @@ $msg = $config['mantenimiento_msg'] ?? 'Estamos realizando mejoras técnicas en 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        body {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            background: #06070a;
-        }
-        .maint-card {
-            max-width: 600px;
-            text-align: center;
-            padding: 4rem;
-            position: relative;
-        }
-        .gear-icon {
-            font-size: 5rem;
-            color: var(--primary);
-            margin-bottom: 2rem;
-            animation: rotate 4s linear infinite;
-        }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        
-        .glow-orb {
-            position: absolute;
-            width: 300px; height: 300px;
-            background: var(--primary);
-            filter: blur(150px);
-            opacity: 0.15;
-            z-index: -1;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
-        }
-    </style>
+    <link rel="stylesheet" href="/assets/css/maintenance.css">
 </head>
 <body class="animate">
     <div class="glow-orb"></div>

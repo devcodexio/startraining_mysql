@@ -1,0 +1,21 @@
+body {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 2rem;
+            background: radial-gradient(circle at top left, rgba(59,130,246,0.1), transparent 400px),
+                        radial-gradient(circle at bottom right, rgba(6,182,212,0.1), transparent 400px);
+        }
+        .register-container { width: 100%; max-width: 800px; }
+        .grid-half { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .glass-card { padding: 2rem !important; }
+            .grid-half { grid-template-columns: 1fr; gap: 1rem; }
+            .form-group.mb-5 .d-flex { flex-direction: column; }
+            .form-group.mb-5 .btn-futuristic { width: 100%; margin-top: 0.5rem; }
+        }
+        
+        @media (max-width: 480px) {
+            .glass-card { padding: 1.5rem !important; border-radius: 20px !important; }
+            .register-container h1 { font-size: 1.4rem !important; }
+        }

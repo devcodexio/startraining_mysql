@@ -17,28 +17,7 @@ $imgSrc = $c['foto_perfil'] ?: $avatarFallback;
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        .profile-container { max-width: 960px; margin: 0 auto; }
-        .profile-header-card {
-            display: flex; align-items: center; gap: 2rem;
-            margin-bottom: 2rem; padding: 2.5rem;
-        }
-        .profile-avatar-wrap {
-            width: 140px; height: 140px; border-radius: 30px;
-            overflow: hidden; position: relative; border: 3px solid #fff;
-            box-shadow: var(--glass-shadow); flex-shrink: 0;
-            background: #fff;
-        }
-        .profile-avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .upload-overlay {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.4);
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; opacity: 0; transition: opacity 0.2s ease; cursor: pointer;
-        }
-        .profile-avatar-wrap:hover .upload-overlay { opacity: 1; }
-        
-        .section-title { font-size: 0.95rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 1.5rem; }
-    </style>
+    <link rel="stylesheet" href="/assets/css/company_profile.css">
 </head>
 <body class="animate">
     <?php require_once __DIR__ . '/../../Layouts/Sidebar.php'; ?>

@@ -7,11 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        body { height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; }
-        .error-code { font-size: clamp(6rem, 15vw, 10rem); font-weight: 900; line-height: 0.8; margin-bottom: 2rem; color: var(--primary); opacity: 0.9; letter-spacing: -5px; }
-        .message-box { max-width: 500px; padding: 4rem 3rem; }
-    </style>
+    <link rel="stylesheet" href="/assets/css/404.css">
 </head>
 <body class="animate">
     <div class="glass-card message-box">

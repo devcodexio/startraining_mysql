@@ -1,5 +1,12 @@
 <?php
 use App\Models\VacancyModel;
+use App\Models\ConfigModel;
+
+$configModel = new ConfigModel();
+$config = $configModel->getSettings();
+$siteName = $config['nombre_sitio'] ?? 'StarTraining';
+$logoSitio = $config['logo_sitio'] ?? '';
+
 $id = $matches[1] ?? 0;
 $model = new VacancyModel();
 $v = $model->getById($id);
@@ -18,194 +25,55 @@ $companyLogo = $v['foto_perfil'] ?: 'https://ui-avatars.com/api/?name=' . urlenc
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($v['titulo_puesto']) ?> | StarTraining</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        .vacancy-hero {
-            padding: 8rem 0 4rem;
-            background: linear-gradient(180deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
-        }
-
-        .company-badge-large {
-            width: 110px;
-            height: 110px;
-            border-radius: 28px;
-            background: #fff;
-            border: 4px solid #fff;
-            box-shadow: var(--glass-shadow);
-            margin-bottom: 2rem;
-            overflow: hidden;
-        }
-
-        .company-badge-large img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .result-search-box {
-            background: rgba(59, 130, 246, 0.04);
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-        }
-
-        /* Hamburger button */
-        .nav-hamburger {
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            gap: 5px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 6px;
-            z-index: 2000;
-            position: relative;
-        }
-
-        .nav-hamburger span {
-            display: block;
-            width: 26px;
-            height: 2px;
-            background: #fff;
-            border-radius: 2px;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-
-        .nav-hamburger.is-open span:nth-child(1) {
-            transform: translateY(7px) rotate(45deg);
-        }
-
-        .nav-hamburger.is-open span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .nav-hamburger.is-open span:nth-child(3) {
-            transform: translateY(-7px) rotate(-45deg);
-        }
-
-        /* Drawer */
-        .nav-drawer {
-            visibility: hidden;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1500;
-            background: rgba(6, 7, 10, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            display: block;
-            padding-top: 25vh;
-            overflow-y: auto;
-        }
-
-        .nav-drawer.is-open {
-            visibility: visible;
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .nav-drawer .nav-item-mobile {
-            display: block;
-            width: 100%;
-            max-width: 340px;
-            margin: 0 auto;
-            font-size: 1.3rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            color: #fff;
-            text-decoration: none;
-            padding: 1.1rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            text-align: center;
-            transition: color 0.2s;
-        }
-
-        @media (max-width: 1024px) {
-            .nav-main {
-                top: 1rem !important;
-                left: 1rem !important;
-                right: 1rem !important;
-                height: 70px !important;
-                padding: 0 1.5rem !important;
-                border-radius: 20px !important;
-            }
-
-            .nav-logo {
-                font-size: 1.2rem !important;
-            }
-
-            .nav-links {
-                display: none !important;
-            }
-
-            .nav-hamburger {
-                display: flex !important;
-            }
-
-            .vacancy-hero {
-                padding-top: 7rem;
-            }
-
-            .row.d-flex {
-                flex-direction: column !important;
-                gap: 2rem !important;
-            }
-
-            .col-8,
-            .col {
-                width: 100% !important;
-                max-width: 100% !important;
-                flex: none !important;
-            }
-
-            .d-flex.gap-4 {
-                flex-wrap: wrap;
-                gap: 1rem !important;
-            }
-
-            .col .d-flex.flex-column {
-                position: static !important;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/assets/css/navbar.css">
+    <link rel="stylesheet" href="/assets/css/vacancies_detail.css">
 </head>
 
-<body class="animate">
+<body class="bg-slate-50">
 
-    <!-- Responsive Navbar -->
-    <nav class="nav-main glass animate"
-        style="position: fixed; top: 1.5rem; left: 1.5rem; right: 1.5rem; height: 85px; display: flex; align-items: center; justify-content: space-between; padding: 0 4rem; z-index: 2000; border-radius: 30px; border: 1px solid var(--border-glass);">
-        <div class="d-flex align-items-center gap-2">
-            <div class="sidebar-grid-icon" style="transform: scale(0.6);">
-                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-            </div>
-            <a href="/" class="nav-logo logo-text m-0"
-                style="text-decoration: none; font-size: 1.5rem; flex-shrink: 0;">StarTraining</a>
-        </div>
+    <!-- =============================================
+         NAV (IDENTICAL TO HOME)
+    ============================================= -->
+    <nav class="nav-main glass">
+        <a href="/" class="nav-logo flex items-center gap-3" style="text-decoration:none;">
+            <?php if ($logoSitio): ?>
+                <div class="relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-300"></div>
+                    <img src="<?= htmlspecialchars($logoSitio) ?>" alt="Logo" class="relative w-12 h-12 object-cover rounded-[1rem] shadow-lg border border-white/20 transform hover:scale-105 transition-all duration-300">
+                </div>
+                <h2 class="logo-text m-0 text-xl font-black tracking-tight" style="background: linear-gradient(to right, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; drop-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <?= htmlspecialchars($siteName) ?>
+                </h2>
+            <?php else: ?>
+                <h2 class="logo-text m-0" style="font-size: 1.8rem;"><?= htmlspecialchars($siteName) ?></h2>
+            <?php endif; ?>
+        </a>
 
-        <!-- Desktop Links -->
-        <div class="nav-links" style="display: flex; align-items: center; gap: 2.5rem;">
+        <!-- Desktop links -->
+        <div class="nav-links" style="gap: 1.5rem;">
             <a href="/" class="nav-item m-0 fw-800"
-                style="background:transparent;color:var(--text-primary);text-decoration:none;font-size:1.1rem;letter-spacing:1px;">INICIO</a>
-            <a href="/login" class="btn-futuristic" style="padding: 0.8rem 2rem; font-size: 0.9rem;">Login</a>
-            <a href="/register-company" class="btn-futuristic" style="padding:0.8rem 2rem;font-size:0.9rem;">Registrarse
-                &rarr;</a>
+                style="background:transparent;color:var(--text-primary);text-decoration:none;font-size:1.1rem;letter-spacing:1px;">
+                INICIO
+            </a>
+            <a href="/login" class="nav-item m-0 fw-800"
+                style="background:transparent;color:var(--text-primary);text-decoration:none;font-size:1.1rem;letter-spacing:1px;">
+                LOGIN
+            </a>
+            <a href="/register-company" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-[0_0_15px_rgba(0,242,254,0.5)] hover:shadow-[0_0_25px_rgba(0,242,254,0.8)] transform hover:-translate-y-1 transition-all duration-300 no-underline">
+                Registrarse &rarr;
+            </a>
         </div>
 
-        <!-- Hamburger button -->
+        <!-- Hamburger button (mobile only) -->
         <button class="nav-hamburger" id="hamburgerBtn" aria-label="Abrir menú" aria-expanded="false"
             aria-controls="navDrawer">
-            <span></span><span></span><span></span>
+            <span></span>
+            <span></span>
+            <span></span>
         </button>
     </nav>
 
@@ -216,6 +84,7 @@ $companyLogo = $v['foto_perfil'] ?: 'https://ui-avatars.com/api/?name=' . urlenc
         <a href="/register-company" class="nav-item-mobile">Registrarse &rarr;</a>
     </div>
 
+    <div class="animate">
     <header class="vacancy-hero">
         <div class="container" style="max-width: 1000px; margin: 0 auto; padding: 0 1.5rem;">
             <div class="row d-flex gap-5">
@@ -261,8 +130,11 @@ $companyLogo = $v['foto_perfil'] ?: 'https://ui-avatars.com/api/?name=' . urlenc
                                 para la empresa.</p>
 
                             <a href="/vacante/<?= $id ?>/postular"
-                                class="btn-futuristic w-100 py-3 mb-3 text-decoration-none">
-                                <i class="fas fa-paper-plane me-2"></i> Postular Ahora
+                                class="relative group overflow-hidden bg-slate-900 text-white font-black text-[10px] tracking-[0.2em] py-5 px-10 rounded-2xl transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.2)] hover:-translate-y-1 flex items-center justify-center gap-4 w-full mb-6 no-underline">
+                                <div class="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                <span class="relative z-10 flex items-center gap-3">
+                                    <i class="fas fa-paper-plane"></i> POSTULAR AHORA
+                                </span>
                             </a>
 
                             <div class="d-flex align-items-center gap-3 p-3"
@@ -281,9 +153,9 @@ $companyLogo = $v['foto_perfil'] ?: 'https://ui-avatars.com/api/?name=' . urlenc
                             <div class="d-flex gap-2">
                                 <input type="text" id="dniConsulta" class="form-input" placeholder="Ingresar DNI"
                                     maxlength="8" style="padding: 0.6rem 1rem; font-size: 0.85rem;">
-                                <button onclick="consultarResultado()" id="btnConsultarRes" class="btn-futuristic"
-                                    style="padding: 0 1rem;">
-                                    <i class="fas fa-search"></i>
+                                <button onclick="consultarResultado()" id="btnConsultarRes"
+                                    class="bg-slate-900 hover:bg-cyan-600 text-white rounded-xl px-6 transition-all duration-300 shadow-lg shadow-slate-100 border-none outline-none cursor-pointer flex items-center justify-center">
+                                    <i class="fas fa-search text-xs"></i>
                                 </button>
                             </div>
 
@@ -311,6 +183,8 @@ $companyLogo = $v['foto_perfil'] ?: 'https://ui-avatars.com/api/?name=' . urlenc
             </div>
         </div>
     </header>
+
+    <?php require_once __DIR__ . '/../../Layouts/Footer.php'; ?>
 
     <!-- Global Modal Alert -->
     <div id="modalOverlay" class="modal-overlay">
@@ -423,6 +297,7 @@ $companyLogo = $v['foto_perfil'] ?: 'https://ui-avatars.com/api/?name=' . urlenc
             }
         });
     </script>
+    </div>
 </body>
 
 </html>

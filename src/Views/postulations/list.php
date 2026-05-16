@@ -54,7 +54,6 @@ function matchColor($pct)
 
 $estadoMap = [
     'en_espera' => ['label' => 'En Espera', 'class' => 'badge-warning'],
-    'IA Realizado' => ['label' => 'IA Realizado', 'class' => 'badge-primary'],
     'Apto' => ['label' => 'Apto', 'class' => 'badge-success'],
     'No Apto' => ['label' => 'No Apto', 'class' => 'badge-danger'],
 ];
@@ -68,129 +67,15 @@ $estadoMap = [
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/postulations_list.css">
     <style>
-        /* Spinner */
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
-
-        .spinner {
-            animation: spin 0.8s linear infinite;
-            display: inline-block;
-        }
-
-        /* AI Progress Bar */
-        .ai-progress-wrap {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background: rgba(7, 10, 15, 0.96);
-            border: 1px solid var(--primary);
-            border-radius: 20px;
-            padding: 1.5rem 2rem;
-            min-width: 320px;
-            z-index: 999;
-            box-shadow: var(--shadow-neon);
-            display: none;
-        }
-
-        .ai-progress-bar-bg {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 0.75rem;
-        }
-
-        .ai-progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--secondary), var(--primary));
-            border-radius: 10px;
-            transition: width 0.5s ease;
-        }
-
-        /* Row glow on analysis */
-        .row-analyzing {
-            animation: rowPulse 1.2s infinite;
-        }
-
-        @keyframes rowPulse {
-
-            0%,
-            100% {
-                background: transparent;
-            }
-
-            50% {
-                background: rgba(var(--primary-rgb), 0.04);
-            }
-        }
-
-        /* Pending Pulse */
-        .match-pending {
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .match-pending:hover {
-            transform: scale(1.05);
-            color: var(--primary) !important;
-        }
-
-        .pulse-ia {
-            animation: pulseIA 2s infinite;
-            opacity: 0.7;
-        }
-
-        @keyframes pulseIA {
-            0% {
-                opacity: 0.5;
-            }
-
-            50% {
-                opacity: 1;
-                text-shadow: 0 0 10px var(--primary);
-            }
-
-            100% {
-                opacity: 0.5;
-            }
-        }
-
-        /* Fixed Centered Email Modal */
-        #emailModal {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(12px);
-            z-index: 10000;
-            display: none;
-            /* Flex on open */
-            align-items: center;
-            /* Centrado vertical */
-            justify-content: center;
-            /* Centrado horizontal */
-            padding: 1.5rem;
-        }
-
-        #emailModal .glass-card {
-            width: 100%;
-            max-width: 550px;
-            animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes modalFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px) scale(0.95);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+        .animate-pulse-green {
+            animation: pulse-green 2s infinite;
         }
     </style>
 </head>
@@ -222,6 +107,28 @@ $estadoMap = [
                 <?php endif; ?>
                 <span class="badge badge-primary"
                     style="font-size: 0.82rem; padding: 0.5rem 1rem;"><?= count($postulations) ?> candidatos</span>
+                
+                <!-- Botón Notificar Aptos (Top) -->
+                <?php 
+                $vacanteActual = null;
+                if ($filterVacante) {
+                    foreach ($vacantesEmpresa as $ve) {
+                        if ($ve['id'] == $filterVacante) { $vacanteActual = $ve['titulo_puesto']; break; }
+                    }
+                }
+
+                // Contar aptos en la lista actual
+                $aptosList = array_filter($postulations, fn($p) => $p['estado_postulacion'] === 'Apto');
+                $totalAptos = count($aptosList);
+                
+                if ($totalAptos > 0): ?>
+                    <button class="btn-futuristic animate-pulse-green" 
+                            style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); font-size: 0.72rem; padding: 0.8rem 1.5rem;"
+                            onclick="openBulkEmailModal()">
+                        <i class="fas fa-paper-plane me-2"></i> 
+                        NOTIFICAR <?= $totalAptos ?> APTOS <?= $vacanteActual ? 'DE ' . mb_strtoupper(htmlspecialchars($vacanteActual)) : '' ?>
+                    </button>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -246,8 +153,6 @@ $estadoMap = [
                 <select name="estado" class="form-input" style="max-width:200px; padding: 0.6rem 1rem; width: 100%; border-radius: 12px;">
                     <option value="">Todos los estados</option>
                     <option value="en_espera" <?= $filterStatus === 'en_espera' ? 'selected' : '' ?>>En Espera</option>
-                    <option value="IA Realizado" <?= $filterStatus === 'IA Realizado' ? 'selected' : '' ?>>IA Realizado
-                    </option>
                     <option value="Apto" <?= $filterStatus === 'Apto' ? 'selected' : '' ?>>Apto</option>
                     <option value="No Apto" <?= $filterStatus === 'No Apto' ? 'selected' : '' ?>>No Apto</option>
                 </select>
@@ -363,6 +268,16 @@ $estadoMap = [
                                             <i class="fas fa-file-pdf"></i>
                                         </a>
                                     <?php endif; ?>
+
+                                    <!-- Botón Mensaje (Individual) -->
+                                    <?php if ($p['estado_postulacion'] !== 'en_espera'): ?>
+                                        <button class="btn-futuristic py-2 px-3" 
+                                                style="font-size:0.72rem; background: #007bff; border-radius:10px;"
+                                                onclick="openEmailModal(<?= $p['id'] ?>, '<?= $jsNombre ?>', '<?= $jsCorreo ?>')"
+                                                title="Enviar mensaje individual">
+                                            <i class="fas fa-comment-dots"></i>
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -426,11 +341,40 @@ $estadoMap = [
                     <button type="button" onclick="closeEmailModal()" class="btn-ghost"
                         style="padding:0.7rem 1.5rem;">Cerrar</button>
                     <button type="submit" id="btnSendEmail" class="btn-futuristic"
-                        style="padding:0.7rem 2rem; background:linear-gradient(135deg, #007bff, #00d2ff);">
+                        style="padding:0.7rem 2rem; background:linear-gradient(135deg, #10b981, #059669);">
                         <i class="fas fa-paper-plane me-2"></i> ENVIAR AHORA
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Bulk Email Modal for Aptos -->
+    <div id="bulkEmailModal" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 1.5rem;">
+        <div class="glass-card" style="width: 100%; max-width: 550px;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-gradient mb-0"><i class="fas fa-users me-2"></i>Notificación Masiva</h3>
+                <button onclick="closeBulkEmailModal()" class="btn-ghost" style="padding:0.4rem 0.75rem; border-radius:10px;"><i class="fas fa-times"></i></button>
+            </div>
+            <p class="small text-muted mb-4">
+                Se enviará este mensaje individualmente a los <strong><?= $totalAptos ?> candidatos</strong> marcados como <strong>Apto</strong> 
+                <?= $vacanteActual ? 'en la convocatoria <strong>"' . htmlspecialchars($vacanteActual) . '"</strong>.' : 'en <strong>todas</strong> tus convocatorias activas.' ?>
+            </p>
+            
+            <div class="mb-3">
+                <label class="xsmall text-muted fw-800 mb-1 d-block text-uppercase">Asunto:</label>
+                <input type="text" id="bulkEmailSubject" class="form-input" value="Siguientes pasos en tu postulación | StarTraining">
+            </div>
+            <div class="mb-4">
+                <label class="xsmall text-muted fw-800 mb-1 d-block text-uppercase">Mensaje:</label>
+                <textarea id="bulkEmailMessage" class="form-input" rows="6" placeholder="Hola, nos comunicamos contigo porque has sido seleccionado como APTO..."></textarea>
+            </div>
+            <div class="d-flex gap-3 justify-content-end">
+                <button type="button" onclick="closeBulkEmailModal()" class="btn-ghost" style="padding:0.7rem 1.5rem;">Cancelar</button>
+                <button type="button" id="btnSendBulk" onclick="sendBulkEmailAction()" class="btn-futuristic" style="padding:0.7rem 2rem; background: #10b981;">
+                    <i class="fas fa-paper-plane me-2"></i> ENVIAR A TODOS
+                </button>
+            </div>
         </div>
     </div>
 
@@ -517,6 +461,46 @@ $estadoMap = [
             document.getElementById('emailModal').style.display = 'none';
         }
 
+        // Bulk Email Modal Logic
+        function openBulkEmailModal() {
+            document.getElementById('bulkEmailModal').style.display = 'flex';
+        }
+        function closeBulkEmailModal() {
+            document.getElementById('bulkEmailModal').style.display = 'none';
+        }
+
+        async function sendBulkEmailAction() {
+            const subject = document.getElementById('bulkEmailSubject').value;
+            const message = document.getElementById('bulkEmailMessage').value;
+            const btn = document.getElementById('btnSendBulk');
+
+            if (!subject || !message) return alert('Complete los campos');
+
+            const aptoIds = <?= json_encode(array_values(array_column($aptosList, 'id'))) ?>;
+            
+            if (!confirm(`¿Enviar este correo a los ${aptoIds.length} candidatos aptos?`)) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner spinner"></i> Procesando...';
+
+            let count = 0;
+            for (const id of aptoIds) {
+                try {
+                    await fetch('/api/postulacion/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ postulacion_id: id, subject, message })
+                    });
+                    count++;
+                } catch (e) { console.error(e); }
+            }
+
+            StarAlert.show('Éxito', `Se enviaron ${count} correos correctamente.`, 'success');
+            closeBulkEmailModal();
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i> ENVIAR A TODOS';
+        }
+
         async function sendCandidateEmail(event) {
             event.preventDefault();
             const btn = document.getElementById('btnSendEmail');
@@ -592,7 +576,7 @@ $estadoMap = [
                             <div class="match-bar-fill" style="width:${pct}%; background:${color};"></div>
                         </div>`;
 
-                    document.getElementById(`status-${postId}`).innerHTML = `<span class="badge badge-primary">IA Realizado</span>`;
+                    document.getElementById(`status-${postId}`).innerHTML = `<span class="badge ${pct >= 60 ? 'badge-success' : 'badge-danger'}">${pct >= 60 ? 'Apto' : 'No Apto'}</span>`;
 
                     btn.outerHTML = `<span id="btn-ia-${postId}" title="Análisis completado" style="width:32px; display:inline-flex; align-items:center; justify-content:center; color:var(--primary);">
                                         <i class="fas fa-check-circle"></i></span>`;

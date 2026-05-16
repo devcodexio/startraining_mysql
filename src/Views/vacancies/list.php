@@ -52,8 +52,14 @@ $vacancies = $model->getAll(['empresa_id' => $_SESSION['user_id']]);
                         <?= htmlspecialchars($v['titulo_puesto']) ?>
                     </h3>
                     
-                    <div class="d-flex align-items-center gap-4 text-muted xsmall fw-600 mb-4">
-                        <span><i class="fas fa-graduation-cap text-primary me-1"></i> <?= htmlspecialchars($v['carrera']) ?></span>
+                    <div class="d-flex flex-wrap gap-1 text-muted xsmall fw-600 mb-4">
+                        <i class="fas fa-graduation-cap text-primary me-2"></i>
+                        <?php 
+                            $car_list = explode(', ', $v['carrera'] ?? '');
+                            foreach($car_list as $c_name): if(empty($c_name)) continue;
+                        ?>
+                            <span class="badge bg-soft-primary px-2" style="font-size: 0.65rem; border-radius: 6px; color: var(--primary); background: rgba(59,130,246,0.1);"><?= htmlspecialchars($c_name) ?></span>
+                        <?php endforeach; ?>
                     </div>
 
                     <p class="text-secondary xsmall mb-4" style="line-height: 1.6; height: 3.2rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">

@@ -10,30 +10,7 @@ if ($userType !== 'admin') { header('Location: /dashboard'); exit; }
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        .carrera-item {
-            display: flex; align-items: center; justify-content: space-between;
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass);
-            padding: 1.25rem 2rem; border-radius: 18px; margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        }
-        .carrera-item:hover {
-            background: rgba(59,130,246,0.06); transform: translateX(8px);
-            border-color: rgba(59,130,246,0.3);
-        }
-        .carrera-icon-box {
-            width: 45px; height: 45px; border-radius: 12px;
-            background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(168,85,247,0.1));
-            display: flex; align-items: center; justify-content: center;
-            color: var(--primary); font-size: 1.1rem;
-        }
-        .add-card {
-            position: sticky; top: 100px;
-            background: linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(168,85,247,0.05) 100%);
-            border: 1px solid var(--border-glass); border-radius: 28px;
-            padding: 2.5rem; backdrop-filter: blur(20px);
-        }
-    </style>
+    <link rel="stylesheet" href="/assets/css/admin_carreras.css">
 </head>
 <body class="animate">
     <?php require_once __DIR__ . '/../../Layouts/Sidebar.php'; ?>
@@ -61,9 +38,14 @@ if ($userType !== 'admin') { header('Location: /dashboard'); exit; }
                                     <span class="xsmall text-muted fw-500">ID: #<?= $c['id'] ?></span>
                                 </div>
                             </div>
-                            <button class="btn-ghost p-3" style="color: var(--danger); border-radius: 50%;" title="Eliminar" onclick="confirmDelete(<?= $c['id'] ?>, '<?= addslashes($c['nombre']) ?>')">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button class="btn-ghost p-3" style="color: var(--primary); border-radius: 50%;" title="Editar" onclick="editCarrera(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['nombre'])) ?>')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-ghost p-3" style="color: var(--danger); border-radius: 50%;" title="Eliminar" onclick="confirmDelete(<?= $c['id'] ?>, '<?= addslashes($c['nombre']) ?>')">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -116,6 +98,46 @@ if ($userType !== 'admin') { header('Location: /dashboard'); exit; }
             });
         }
 
+        function editCarrera(id, currentName) {
+            Swal.fire({
+                title: 'Editar Carrera',
+                input: 'text',
+                inputValue: currentName,
+                showCancelButton: true,
+                confirmButtonColor: '#3b82f6',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Guardar',
+                cancelButtonText: 'Cancelar',
+                background: 'rgba(15,23,42,0.95)',
+                color: '#fff',
+                backdrop: `rgba(0,0,0,0.6) blur(4px)`,
+                inputValidator: (value) => {
+                    if (!value.trim()) return '¡Necesitas escribir un nombre!'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/admin/carreras/update';
+                    
+                    const idField = document.createElement('input');
+                    idField.type = 'hidden';
+                    idField.name = 'id';
+                    idField.value = id;
+                    
+                    const nameField = document.createElement('input');
+                    nameField.type = 'hidden';
+                    nameField.name = 'nombre';
+                    nameField.value = result.value.trim();
+                    
+                    form.appendChild(idField);
+                    form.appendChild(nameField);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
         window.addEventListener('load', () => {
             const params = new URLSearchParams(window.location.search);
             const Toast = Swal.mixin({
@@ -127,6 +149,7 @@ if ($userType !== 'admin') { header('Location: /dashboard'); exit; }
             });
 
             if (params.get('reg') === 'success') Toast.fire('¡Registrada!', 'La carrera se agregó con éxito.', 'success');
+            if (params.get('upd') === 'success') Toast.fire('¡Actualizada!', 'La carrera se modificó con éxito.', 'success');
             if (params.get('del') === 'success') Toast.fire('Eliminada', 'Carrera borrada del sistema.', 'info');
             if (params.get('err') === 'in_use') Toast.fire('Error', 'Esta carrera tiene vacantes activas y no puede borrarse.', 'error');
             if (params.get('err') === 'exists') Toast.fire('Error', 'Esa carrera ya existe.', 'error');

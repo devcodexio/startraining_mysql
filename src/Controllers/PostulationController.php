@@ -5,16 +5,19 @@ namespace App\Controllers;
 use App\Services\ExternalApiService;
 use App\Config\Database;
 
-class PostulationController {
+class PostulationController
+{
 
-    public function store() {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+    public function store()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+            return;
 
         $vacante_id = $_POST['vacante_id'];
-        $dni        = $_POST['dni'];
-        $nombre     = $_POST['nombre_completo'];
-        $celular    = $_POST['celular'];
-        $email      = $_POST['correo_estudiante'];
+        $dni = $_POST['dni'];
+        $nombre = $_POST['nombre_completo'];
+        $celular = $_POST['celular'];
+        $email = $_POST['correo_estudiante'];
 
         // 1. Validaciones de Duplicados, Celular y Correo Institucional
         $db = Database::getConnection();
@@ -49,23 +52,23 @@ class PostulationController {
 
         $ext = pathinfo($_FILES['url_cv_pdf']['name'], PATHINFO_EXTENSION);
         $fileName = 'cv_' . $dni . '_' . time() . '.' . $ext;
-        
+
         try {
             $cloudinaryUrl = $_ENV['CLOUDINARY_URL'] ?? '';
-            $uploadPreset  = $_ENV['CLOUDINARY_UPLOAD_PRESET'] ?? ''; // Opcional, para Unsigned uploads
+            $uploadPreset = $_ENV['CLOUDINARY_UPLOAD_PRESET'] ?? ''; // Opcional, para Unsigned uploads
 
             if (!empty($cloudinaryUrl)) {
                 // Modo Producción: Usar Cloudinary sin SDK (vía cURL REST)
                 // CLOUDINARY_URL format: cloudinary://api_key:api_secret@cloud_name
                 preg_match('/cloudinary:\/\/([^:]+):([^@]+)@(.+)/', $cloudinaryUrl, $matches);
                 if (count($matches) === 4) {
-                    $apiKey     = $matches[1];
-                    $apiSecret  = $matches[2];
-                    $cloudName  = trim($matches[3]);
-                    $timestamp  = time();
-                    $folder     = 'startraining/cvs';
-                    $public_id  = 'cv_' . $dni . '_' . $timestamp;
-                    
+                    $apiKey = $matches[1];
+                    $apiSecret = $matches[2];
+                    $cloudName = trim($matches[3]);
+                    $timestamp = time();
+                    $folder = 'startraining/cvs';
+                    $public_id = 'cv_' . $dni . '_' . $timestamp;
+
                     $postData = [
                         'file' => new \CURLFile($_FILES['url_cv_pdf']['tmp_name'], 'application/pdf', $fileName),
                     ];
@@ -73,32 +76,34 @@ class PostulationController {
                     if (!empty($uploadPreset)) {
                         // MODO UNSIGNED (Más flexible si las API Keys tienen permisos restringidos)
                         $postData['upload_preset'] = $uploadPreset;
-                        $postData['folder']        = $folder;
-                        $postData['public_id']     = $public_id;
+                        $postData['folder'] = $folder;
+                        $postData['public_id'] = $public_id;
                         // 🔹 Nota: En modo UNSIGNED NO se permite enviar 'access_mode'.
                         // Se debe configurar el Preset en Cloudinary como 'Public'.
                     } else {
                         // MODO SIGNED (Estándar, requiere API Key con permiso 'Upload')
                         $params = [
                             'access_mode' => 'public', // 🔹 Incluir en la firma
-                            'folder'    => $folder,
+                            'folder' => $folder,
                             'public_id' => $public_id,
                             'timestamp' => $timestamp
                         ];
                         ksort($params);
                         $strToSign = "";
-                        foreach ($params as $k => $v) { $strToSign .= "$k=$v&"; }
+                        foreach ($params as $k => $v) {
+                            $strToSign .= "$k=$v&";
+                        }
                         $strToSign = rtrim($strToSign, "&") . $apiSecret;
                         $signature = sha1($strToSign);
 
-                        $postData['api_key']     = $apiKey;
-                        $postData['timestamp']   = $timestamp;
-                        $postData['signature']   = $signature;
-                        $postData['folder']      = $folder;
-                        $postData['public_id']   = $public_id;
+                        $postData['api_key'] = $apiKey;
+                        $postData['timestamp'] = $timestamp;
+                        $postData['signature'] = $signature;
+                        $postData['folder'] = $folder;
+                        $postData['public_id'] = $public_id;
                         $postData['access_mode'] = 'public'; // 🔹 Asegurar que sea público
                     }
-                    
+
                     $ch = curl_init("https://api.cloudinary.com/v1_1/$cloudName/auto/upload");
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                     curl_setopt($ch, CURLOPT_POST, true);
@@ -106,7 +111,7 @@ class PostulationController {
                     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
                     $response = curl_exec($ch);
                     curl_close($ch);
-                    
+
                     $json = json_decode($response, true);
                     if (isset($json['secure_url'])) {
                         $cvPath = $json['secure_url'];
@@ -123,8 +128,9 @@ class PostulationController {
             } else {
                 // Modo Local / Desarrollo
                 $uploadDir = __DIR__ . '/../../public/uploads/cvs/';
-                if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-                
+                if (!is_dir($uploadDir))
+                    mkdir($uploadDir, 0777, true);
+
                 if (move_uploaded_file($_FILES['url_cv_pdf']['tmp_name'], $uploadDir . $fileName)) {
                     $cvPath = 'uploads/cvs/' . $fileName;
                 } else {
@@ -154,7 +160,8 @@ class PostulationController {
      * Analiza UN candidato con la IA de n8n y actualiza la BD.
      * POST /api/analizar-cv  { postulacion_id: int }
      */
-    public function analizarCv() {
+    public function analizarCv()
+    {
         set_time_limit(180); // Increase time for slow AI
         header('Content-Type: application/json');
 
@@ -207,18 +214,20 @@ class PostulationController {
             return;
         }
 
-        $puntaje     = $resultado['puntaje'];
+        $puntaje = $resultado['puntaje'];
         $descripcion = $resultado['descripcion'];
+
+        $nuevoEstado = ($puntaje >= 60) ? 'Apto' : 'No Apto';
 
         // Actualizar BD
         $upd = $db->prepare("UPDATE postulaciones 
-                              SET match_porcentaje = ?, ia_analisis_descripcion = ?, estado_postulacion = 'IA Realizado'
+                              SET match_porcentaje = ?, ia_analisis_descripcion = ?, estado_postulacion = ?
                               WHERE id = ?");
-        $upd->execute([$puntaje, $descripcion, $postulacionId]);
+        $upd->execute([$puntaje, $descripcion, $nuevoEstado, $postulacionId]);
 
         echo json_encode([
-            'success'     => true,
-            'puntaje'     => $puntaje,
+            'success' => true,
+            'puntaje' => $puntaje,
             'descripcion' => $descripcion,
         ]);
     }
@@ -227,7 +236,8 @@ class PostulationController {
      * Analiza TODOS los candidatos en_espera de una empresa con la IA.
      * POST /api/analizar-todos  { empresa_id: int }
      */
-    public function analizarTodos() {
+    public function analizarTodos()
+    {
         set_time_limit(300); // Bulk analysis takes longer
         header('Content-Type: application/json');
 
@@ -267,11 +277,14 @@ class PostulationController {
             $resultado = ExternalApiService::analizarCvConN8n($cvFilePath, $post['requisitos_raw']);
 
             if ($resultado['success']) {
+                $puntaje = $resultado['puntaje'];
+                $nuevoEstado = ($puntaje >= 60) ? 'Apto' : 'No Apto';
+
                 $upd = $db->prepare("UPDATE postulaciones 
-                                     SET match_porcentaje = ?, ia_analisis_descripcion = ?, estado_postulacion = 'IA Realizado'
+                                     SET match_porcentaje = ?, ia_analisis_descripcion = ?, estado_postulacion = ?
                                      WHERE id = ?");
-                $upd->execute([$resultado['puntaje'], $resultado['descripcion'], $post['id']]);
-                $resultados[] = ['id' => $post['id'], 'puntaje' => $resultado['puntaje']];
+                $upd->execute([$puntaje, $resultado['descripcion'], $nuevoEstado, $post['id']]);
+                $resultados[] = ['id' => $post['id'], 'puntaje' => $puntaje];
                 $ok++;
             } else {
                 $fail++;
@@ -279,16 +292,17 @@ class PostulationController {
         }
 
         echo json_encode([
-            'success'    => true,
+            'success' => true,
             'analizados' => $ok,
-            'fallidos'   => $fail,
-            'total'      => count($pendientes),
+            'fallidos' => $fail,
+            'total' => count($pendientes),
             'resultados' => $resultados,
         ]);
     }
 
-    public function consultDni() {
-        $dni  = $_GET['dni'] ?? '';
+    public function consultDni()
+    {
+        $dni = $_GET['dni'] ?? '';
         $data = ExternalApiService::consultDni($dni);
         header('Content-Type: application/json');
         echo json_encode($data);
@@ -298,10 +312,11 @@ class PostulationController {
      * Consulta el resultado de una postulación por DNI y vacante_id
      * GET /api/postulacion/resultado?dni=...&vacante_id=...
      */
-    public function getResultadoDni() {
+    public function getResultadoDni()
+    {
         header('Content-Type: application/json');
-        
-        $dni       = $_GET['dni'] ?? '';
+
+        $dni = $_GET['dni'] ?? '';
         $vacanteId = intval($_GET['vacante_id'] ?? 0);
 
         if (!$dni || !$vacanteId) {
@@ -309,7 +324,7 @@ class PostulationController {
             return;
         }
 
-        $db   = Database::getConnection();
+        $db = Database::getConnection();
         $stmt = $db->prepare("SELECT nombre_completo, match_porcentaje, estado_postulacion, ia_analisis_descripcion 
                                FROM postulaciones 
                                WHERE dni = ? AND vacante_id = ? 
@@ -323,11 +338,11 @@ class PostulationController {
         }
 
         echo json_encode([
-            'success'    => true,
-            'nombre'     => $row['nombre_completo'],
-            'match'      => floatval($row['match_porcentaje']),
-            'estado'     => $row['estado_postulacion'],
-            'analisis'   => $row['ia_analisis_descripcion']
+            'success' => true,
+            'nombre' => $row['nombre_completo'],
+            'match' => floatval($row['match_porcentaje']),
+            'estado' => $row['estado_postulacion'],
+            'analisis' => $row['ia_analisis_descripcion']
         ]);
     }
 
@@ -335,7 +350,8 @@ class PostulationController {
      * Actualiza el estado de una postulación (Apto/No Apto).
      * POST /api/postulacion/update-status
      */
-    public function updateStatus() {
+    public function updateStatus()
+    {
         header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'error' => 'Método no permitido']);
@@ -362,7 +378,8 @@ class PostulationController {
      * Envía un correo al postulante usando un Webhook de n8n (conectado a Gmail).
      * POST /api/postulacion/send-email
      */
-    public function sendEmail() {
+    public function sendEmail()
+    {
         header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'error' => 'Método no permitido']);
@@ -392,9 +409,9 @@ class PostulationController {
             return;
         }
 
-        // Solo permitir enviar si es APTO (como pidió el usuario)
-        if ($post['estado_postulacion'] !== 'Apto') {
-            echo json_encode(['success' => false, 'error' => 'Solo se puede enviar correos a postulantes marcados como "Apto".']);
+        // Permitir enviar a cualquier candidato analizado (Apto o No Apto)
+        if ($post['estado_postulacion'] === 'en_espera') {
+            echo json_encode(['success' => false, 'error' => 'Primero debe analizar al candidato con IA antes de enviar notificaciones.']);
             return;
         }
 
@@ -412,8 +429,10 @@ class PostulationController {
             echo json_encode(['success' => false, 'error' => $result['error']]);
         }
     }
-    public function marcarNotificacionLeida() {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+    public function marcarNotificacionLeida()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+            return;
         $input = json_decode(file_get_contents('php://input'), true);
         $id = intval($input['id'] ?? 0);
         if ($id) {
@@ -424,8 +443,10 @@ class PostulationController {
         echo json_encode(['success' => true]);
     }
 
-    public function marcarTodasNotificacionesLeidas() {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+    public function marcarTodasNotificacionesLeidas()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+            return;
         $empresaId = intval($_SESSION['user_id'] ?? 0);
         if ($empresaId) {
             $db = Database::getConnection();
@@ -436,5 +457,86 @@ class PostulationController {
             $stmt->execute([$empresaId]);
         }
         echo json_encode(['success' => true]);
+    }
+
+    public function export()
+    {
+        if (session_status() === PHP_SESSION_NONE)
+            session_start();
+        $userId = $_SESSION['user_id'] ?? 0;
+        $userType = $_SESSION['user_type'] ?? '';
+
+        if (!$userId) {
+            header('Location: /login');
+            exit;
+        }
+
+        $db = Database::getConnection();
+
+        // Si es Admin, descarga TODO. Si es Empresa, solo lo suyo.
+        if ($userType === 'admin') {
+            $sql = "SELECT p.*, v.titulo_puesto 
+                    FROM postulaciones p
+                    JOIN vacantes v ON p.vacante_id = v.id
+                    ORDER BY v.titulo_puesto ASC, p.match_porcentaje DESC";
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        } else {
+            $sql = "SELECT p.*, v.titulo_puesto 
+                    FROM postulaciones p
+                    JOIN vacantes v ON p.vacante_id = v.id
+                    WHERE v.empresa_id = ?
+                    ORDER BY v.titulo_puesto ASC, p.match_porcentaje DESC";
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$userId]);
+        }
+
+        $data = $stmt->fetchAll();
+
+        $fileName = "backup_postulantes_" . date('Y-m-d') . ".xls";
+
+        if (ob_get_level())
+            ob_end_clean();
+        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+        header("Content-Disposition: attachment; filename=$fileName");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+
+        echo "<table border='1'>";
+        echo "<tr style='background-color: #0f172a; color: white; font-weight: bold;'>";
+        echo "<th>CONVOCATORIA</th>";
+        echo "<th>DNI</th>";
+        echo "<th>CANDIDATO</th>";
+        echo "<th>CORREO</th>";
+        echo "<th>CELULAR</th>";
+        echo "<th>ESTADO</th>";
+        echo "<th>AI MATCH %</th>";
+        echo "<th>FECHA POSTULACION</th>";
+        echo "</tr>";
+
+        foreach ($data as $row) {
+            $pct = round($row['match_porcentaje']);
+            $estado = $row['estado_postulacion'];
+
+            // Colores por estado
+            $bgColor = '';
+            if ($estado === 'Apto')
+                $bgColor = 'background-color: #dcfce7;';
+            if ($estado === 'No Apto')
+                $bgColor = 'background-color: #fee2e2;';
+
+            echo "<tr>";
+            echo "<td>" . htmlspecialchars($row['titulo_puesto']) . "</td>";
+            echo "<td>" . htmlspecialchars($row['dni']) . "</td>";
+            echo "<td>" . htmlspecialchars($row['nombre_completo']) . "</td>";
+            echo "<td>" . htmlspecialchars($row['correo_estudiante']) . "</td>";
+            echo "<td>" . htmlspecialchars($row['celular']) . "</td>";
+            echo "<td style='$bgColor'>" . htmlspecialchars($estado) . "</td>";
+            echo "<td style='text-align: center; font-weight: bold;'>" . $pct . "%</td>";
+            echo "<td>" . date('d/m/Y H:i', strtotime($row['fecha_postulacion'])) . "</td>";
+            echo "</tr>";
+        }
+        echo "</table>";
+        exit;
     }
 }

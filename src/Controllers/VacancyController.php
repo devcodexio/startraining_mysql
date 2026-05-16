@@ -22,16 +22,26 @@ class VacancyController {
         
         $stmt = $db->prepare($sql);
         
-        if ($stmt->execute([
+        $success = $stmt->execute([
             ':eid' => $companyId,
-            ':cid' => $_POST['carrera_id'],
+            ':cid' => $_POST['carrera_ids'][0] ?? null, // Retrocompatibilidad con la columna vieja por ahora
             ':titulo' => $_POST['titulo_puesto'],
             ':desc' => $_POST['descripcion_puesto'],
             ':req' => $_POST['requisitos_raw'],
             ':modal' => $_POST['modalidad'],
             ':u' => $_POST['ubicacion'] ?: null,
             ':fecha' => $_POST['fecha_limite'] ?: null
-        ])) {
+        ]);
+
+        if ($success) {
+            $vacanteId = $db->lastInsertId();
+            // Guardar carreras en tabla relacional
+            if (!empty($_POST['carrera_ids'])) {
+                $stmtRel = $db->prepare("INSERT INTO vacante_carreras (vacante_id, carrera_id) VALUES (?, ?)");
+                foreach ($_POST['carrera_ids'] as $cid) {
+                    $stmtRel->execute([$vacanteId, $cid]);
+                }
+            }
             header('Location: /vacancies?reg=success');
         } else {
             header('Location: /vacancies/create?error=db_fail');
@@ -61,8 +71,8 @@ class VacancyController {
                 WHERE id = :id";
         
         $stmt = $db->prepare($sql);
-        $stmt->execute([
-            ':cid' => $_POST['carrera_id'],
+        $success = $stmt->execute([
+            ':cid' => $_POST['carrera_ids'][0] ?? null, 
             ':titulo' => $_POST['titulo_puesto'],
             ':desc' => $_POST['descripcion_puesto'],
             ':req' => $_POST['requisitos_raw'],
@@ -71,6 +81,17 @@ class VacancyController {
             ':fecha' => $_POST['fecha_limite'] ?: null,
             ':id' => $id
         ]);
+
+        if ($success) {
+            // Sincronizar carreras
+            $db->prepare("DELETE FROM vacante_carreras WHERE vacante_id = ?")->execute([$id]);
+            if (!empty($_POST['carrera_ids'])) {
+                $stmtRel = $db->prepare("INSERT INTO vacante_carreras (vacante_id, carrera_id) VALUES (?, ?)");
+                foreach ($_POST['carrera_ids'] as $cid) {
+                    $stmtRel->execute([$id, $cid]);
+                }
+            }
+        }
 
         header('Location: /vacancies?upd=success');
     }
@@ -149,5 +170,48 @@ class VacancyController {
 
         $referer = $_SERVER['HTTP_REFERER'] ?: '/vacancies';
         header('Location: ' . $referer);
+    }
+
+    public function export() {
+        $companyId = $_SESSION['user_id'] ?? 0;
+        if (!$companyId) return;
+
+        $db = Database::getConnection();
+        $stmt = $db->prepare("SELECT v.*, c.nombre as carrera_nombre 
+                               FROM vacantes v 
+                               JOIN carreras c ON v.carrera_id = c.id
+                               WHERE v.empresa_id = ? 
+                               ORDER BY v.fecha_publicacion DESC");
+        $stmt->execute([$companyId]);
+        $data = $stmt->fetchAll();
+
+        $fileName = "mis_vacantes_" . date('Y-m-d') . ".xls";
+        if (ob_get_level()) ob_end_clean();
+        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+        header("Content-Disposition: attachment; filename=$fileName");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+
+        echo "<table border='1'>";
+        echo "<tr style='background-color: #1e293b; color: white; font-weight: bold;'>";
+        echo "<th>TITULO PUESTO</th><th>CARRERA</th><th>MODALIDAD</th><th>UBICACION</th><th>ESTADO</th><th>FECHA LIMITE</th><th>POSTULANTES</th>";
+        echo "</tr>";
+        foreach ($data as $v) {
+            $st = $db->prepare("SELECT COUNT(*) FROM postulaciones WHERE vacante_id = ?");
+            $st->execute([$v['id']]);
+            $count = $st->fetchColumn();
+
+            echo "<tr>";
+            echo "<td>".htmlspecialchars($v['titulo_puesto'])."</td>";
+            echo "<td>".htmlspecialchars($v['carrera_nombre'])."</td>";
+            echo "<td>".htmlspecialchars($v['modalidad'])."</td>";
+            echo "<td>".htmlspecialchars($v['ubicacion'])."</td>";
+            echo "<td>".htmlspecialchars($v['estado'])."</td>";
+            echo "<td>".$v['fecha_limite']."</td>";
+            echo "<td style='text-align:center;'>".$count."</td>";
+            echo "</tr>";
+        }
+        echo "</table>";
+        exit;
     }
 }

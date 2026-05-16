@@ -7,10 +7,12 @@ class CompanyModel extends Model {
     public function create($data) {
         $sql = "INSERT INTO empresas (
                     nombre_comercial, ruc, sector, correo_contacto, 
-                    telefono, direccion, password_hash, foto_perfil
+                    telefono, direccion, password_hash, foto_perfil, ficha_ruc,
+                    dni_frente, dni_reverso, foto_selfie
                 ) VALUES (
                     :nombre_comercial, :ruc, :sector, :correo_contacto, 
-                    :telefono, :direccion, :password_hash, :foto_perfil
+                    :telefono, :direccion, :password_hash, :foto_perfil, :ficha_ruc,
+                    :dni_frente, :dni_reverso, :foto_selfie
                 )";
         
         $stmt = $this->db->prepare($sql);
@@ -26,7 +28,11 @@ class CompanyModel extends Model {
             ':telefono' => $data['telefono'] ?? '',
             ':direccion' => $data['direccion'] ?? '',
             ':password_hash' => $passHash,
-            ':foto_perfil' => $data['foto_perfil'] ?? null
+            ':foto_perfil' => $data['foto_perfil'] ?? null,
+            ':ficha_ruc' => $data['ficha_ruc'] ?? null,
+            ':dni_frente' => $data['dni_frente'] ?? null,
+            ':dni_reverso' => $data['dni_reverso'] ?? null,
+            ':foto_selfie' => $data['foto_selfie'] ?? null
         ]);
     }
 
